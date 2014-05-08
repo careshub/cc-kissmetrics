@@ -364,9 +364,10 @@ if( !class_exists( 'KM_Filter' ) ) {
 			}
 		}
 
-		/**
+		/*********************************************
 		 * Begin php-event-based tracking submissions.
 		 */
+
 		/**
 		 * Track when a user registers (BP-safe).
 		 */
@@ -380,6 +381,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 				KM::record( 'Created account / registered' );
 			}
 		}
+
 		/**
 		 * Track when a user leaves the site.
 		 */
@@ -394,6 +396,17 @@ if( !class_exists( 'KM_Filter' ) ) {
 			}
 		}
 		/**
+		 * Track when a user logs in.
+		 */
+		function track_cc_login($user_login, $user) {
+		    include_once('km.php');
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Logged in' );
+		}
+
+		/**
 		 * Track when a user joins a group.
 		 */
 		function track_join_bp_group( $group_id, $user_id ) {
@@ -405,6 +418,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::identify( $user->user_email );
 			KM::record( 'Joined group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
 		}
+
 		/**
 		 * Track when a user leaves a group.
 		 */
@@ -442,20 +456,23 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_filter( 'the_content', array( 'KM_Filter', 'the_content' ), 99 );
 	add_filter( 'comment_text', array( 'KM_Filter', 'comment_text' ), 99 );
 
-	// Login form tracking
-	add_action( 'login_footer', array( 'KM_Filter', 'track_login' ) );
+	// Login form tracking 
+	// add_action( 'login_footer', array( 'KM_Filter', 'track_login' ) );
 
-	// Register form tracking
-	add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
-	add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
+	// Register form tracking 
+	// add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
+	// add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
 
 	// Comment form tracking
 	add_action( 'comment_form', array( 'KM_Filter', 'track_comment_form' ) );
 
-	// CC event tracking
-	//Registration, account deletion
+	// CC event tracking *****************************************************************
+	// Registration, account deletion
 	add_action( 'bp_core_signup_user', array( 'KM_Filter', 'track_registration_bp' ), 17 );
 	add_action( 'delete_user', array( 'KM_Filter', 'track_user_account_delete' ), 17 );
+
+	//Signing in
+	add_action('wp_login', array( 'KM_Filter', 'track_cc_login' ), 45, 2);
 
 	// Group joining and leaving
 	add_action( 'groups_join_group', array( 'KM_Filter', 'track_join_bp_group' ), 17, 2 );
