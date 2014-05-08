@@ -57,7 +57,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 				if( get_option( 'cc_kissmetrics_identify_users' ) && is_user_logged_in() ) {
 					global $current_user;
 					get_currentuserinfo();
-					?>_kmq.push(['identify', '<?php echo $current_user->user_login ?>']);
+					?>_kmq.push(['identify', '<?php echo $current_user->user_email ?>']);
 					<?php
 				}
 
@@ -107,14 +107,23 @@ if( !class_exists( 'KM_Filter' ) ) {
 					});
 				<?php
 				}
+				// Page-specific click listeners:
+				// Grant Support: http://www.communitycommons.org/grantsupport/
+				if( is_page_template( 'page-templates/template-grant-writing.php' ) ) {
+					?>_kmq.push(['trackClick', '.why-use-this-tool', 'Clicked Target Area Intervention Tool planning guide']);
+				<?php
+				}
 				?></script>
 				<?php
 			}
+
+
 		}
 
 
 		/**
 		 * Creates a "View post" event for single post views when the_content is called.
+		 * DC: This works poorly. If you view an page with a custom loop showing 10 articles (like /maps-data) in short form, each one gets a "view".
 		 *
 		 * @param string $text The content text.
 		 */
@@ -247,6 +256,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		/**
 		 * Parse links in the content.
+		 * DC: When this is enabled, it breaks the "preventDefault" piece of AJAX event clicks. For instance, the /groups/tree-loop
+		 * ANSWER: http://support.kissmetrics.com/apis/javascript/index.html#tracking-outbound-link-clicks---trackclickonoutboundlink is a hog and this plugin's code applies it all the time (for local links without a domain, for instance).
+		 * 
 		 *
 		 * @param array $matches The preg_replace_callback matches for links.
 		 * @return string The modified text.
@@ -356,7 +368,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Begin php-event-based tracking submissions.
 		 */
 		/**
-		 * Track when a user registers BP safe.
+		 * Track when a user registers (BP-safe).
 		 */
 		function track_registration_bp( $user_id ) {
 			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
@@ -364,10 +376,48 @@ if( !class_exists( 'KM_Filter' ) ) {
 				$user = get_user_by( 'id', $user_id );
 
 				KM::init( get_option( 'cc_kissmetrics_key' ) );
-				KM::identify( $user->user_login );
+				KM::identify( $user->user_email );
 				KM::record( 'Created account / registered' );
 			}
 		}
+		/**
+		 * Track when a user leaves the site.
+		 */
+		function track_user_account_delete( $user_id ) {
+			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
+				include_once('km.php');
+				$user = get_user_by( 'id', $user_id );
+
+				KM::init( get_option( 'cc_kissmetrics_key' ) );
+				KM::identify( $user->user_email );
+				KM::record( 'Deleted account' );
+			}
+		}
+		/**
+		 * Track when a user joins a group.
+		 */
+		function track_join_bp_group( $group_id, $user_id ) {
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
+			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Joined group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
+		}
+		/**
+		 * Track when a user leaves a group.
+		 */
+		function track_leave_bp_group( $group_id, $user_id ) {
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
+			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Left group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
+		}
+
 
 	}
 }
@@ -399,8 +449,15 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
 	add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
 
-	add_action( 'bp_core_signup_user', array( 'KM_Filter', 'track_registration_bp' ), 17 );
-
 	// Comment form tracking
 	add_action( 'comment_form', array( 'KM_Filter', 'track_comment_form' ) );
+
+	// CC event tracking
+	//Registration, account deletion
+	add_action( 'bp_core_signup_user', array( 'KM_Filter', 'track_registration_bp' ), 17 );
+	add_action( 'delete_user', array( 'KM_Filter', 'track_user_account_delete' ), 17 );
+
+	// Group joining and leaving
+	add_action( 'groups_join_group', array( 'KM_Filter', 'track_join_bp_group' ), 17, 2 );
+	add_action( 'groups_leave_group', array( 'KM_Filter', 'track_leave_bp_group' ), 17, 2 );  
 }
