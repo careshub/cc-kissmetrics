@@ -111,6 +111,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 				// Grant Support: http://www.communitycommons.org/grantsupport/
 				if( is_page_template( 'page-templates/template-grant-writing.php' ) ) {
 					?>_kmq.push(['trackClick', '.why-use-this-tool', 'Clicked Target Area Intervention Tool planning guide']);
+					_kmq.push(['trackClick', '.how-to-use-this-tool', 'Clicked Target Area Intervention Tool step-by-step guide']);
+					_kmq.push(['trackClick', '.access-target-intervention-area-tool', 'Clicked Target Area Intervention Tool']);
+					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
 				}
 				?></script>
