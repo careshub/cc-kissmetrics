@@ -435,6 +435,79 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( 'Left group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
 		}
 
+		/**
+		 * Track when a friendship is created.
+		 */
+		function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+			include_once('km.php');
+			$initiator = get_user_by( 'id', $initiator_user_id );
+			$friend = get_user_by( 'id', $friend_user_id );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $initiator->user_email );
+			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id, 
+														'Initiator username' => $initiator->user_login, 
+														'Initiator email' => $initiator->user_email,  
+														'Friend ID' => $friend_user_id, 
+														'Friend username' => $friend->user_login, 
+														'Friend email' => $friend->user_email, ) 
+			);
+
+		}
+		/**
+		 * Track when a friendship is canceled.
+		 */
+		function track_cancel_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+			include_once('km.php');
+			$initiator = get_user_by( 'id', $initiator_user_id );
+			$friend = get_user_by( 'id', $friend_user_id );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $initiator->user_email );
+			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id, 
+														'Initiator username' => $initiator->user_login, 
+														'Initiator email' => $initiator->user_email,  
+														'Friend ID' => $friend_user_id, 
+														'Friend username' => $friend->user_login, 
+														'Friend email' => $friend->user_email, ) 
+			);
+		}
+
+		function track_comment_approval( $comment_id, $comment_status ) {
+			if ( $comment_status != 'approve' )
+				return false;
+
+			include_once('km.php');
+
+			// Get post details
+			$comment = get_comment( $comment_id );
+			// Post comment was made to
+			$post = get_post( $comment->comment_post_ID );
+
+			// Is the post a "feature"?
+			if ( 'post' == $post->post_type ) {
+				$tag_ids = wp_get_post_tags( $post->ID, array( 'fields' => 'ids' ) );
+				$featured = in_array( 858, $tag_ids) ? 'yes' : 'no';
+			} else {
+				$featured = 'no';
+			}
+
+			if ( ! $post )
+				return false;
+
+			$author = get_user_by( 'id', $post->post_author );
+ 
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $comment->comment_author_email );
+			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID, 
+														'Post title' => $post->post_title,
+														'Post type' => $post->post_type,
+														'Featured post' => $featured, 
+														'Author email' => $author->user_email
+														 ) 
+			);
+
+		}
 
 	}
 }
@@ -479,5 +552,13 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 	// Group joining and leaving
 	add_action( 'groups_join_group', array( 'KM_Filter', 'track_join_bp_group' ), 17, 2 );
-	add_action( 'groups_leave_group', array( 'KM_Filter', 'track_leave_bp_group' ), 17, 2 );  
+	add_action( 'groups_leave_group', array( 'KM_Filter', 'track_leave_bp_group' ), 17, 2 );
+
+	// Friendships
+	add_action( 'friends_friendship_accepted', array( 'KM_Filter', 'track_create_friendship' ), 17, 3 );
+	add_action( 'friends_friendship_deleted', array( 'KM_Filter', 'track_cancel_friendship' ), 17, 3 );
+
+	// Comments
+	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
+
 }
