@@ -511,7 +511,6 @@ if( !class_exists( 'KM_Filter' ) ) {
  * Track when a Category page is displayed
 **/
 
-
 function myStartSession() {
     if(!session_id()) {
         session_start();
@@ -574,6 +573,45 @@ function generate_identifier() {
         $_SERVER['HTTP_USER_AGENT'];
     return array('md5' => md5($full_str), 'full_str' => $full_str);
 }
+
+function track_view_cchelp_personas() {
+        $taxonomy = 'cchelp_personas';
+        if ( ! is_tax( $taxonomy ) ) return;
+		include_once( 'km.php' );
+        // Start the Kissmetrics plugin
+		KM::init( get_option( 'cc_kissmetrics_key' ) );
+        // Check if user is logged in and has NOT been aliased against their non-logged in ID
+        //       then we have work to do
+		if ( is_user_logged_in() && ! isset( $_SESSION['km_aliased'] ) ) {
+            // Determine identity of user
+			$current_user = wp_get_current_user();
+            // We've not aliased unlogged ID
+            if ( ! $_SESSION['km_aliased'] && isset( $_SESSION['km_identity'] ) ) {
+                // Tell KissMetrics about Alias and make note that we have done so.
+                KM::alias( $_SESSION['km_identity'], $current_user->user_email );
+                $_SESSION['km_aliased'] = true;
+            }
+            // Set Identity as our current user's e-mail address
+            $_SESSION['km_identity'] = $current_user->user_email;
+        } else {
+            // We don't have a session identifier, so we need to get one
+            if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
+                $new_idents = KM_FILTER::generate_identifier();
+                $_SESSION['km_identity'] = $new_idents['md5'];
+            }
+        }
+        if ( has_term( 'daniel-cogis-2', $taxonomy ) ) {
+            $persona = 'daniel';
+        } elseif ( has_term( 'maria-cogis-2', $taxonomy ) ) {
+            $persona = 'maria';
+        } elseif ( has_term( 'sara-cogis-2', $taxonomy ) ) {
+            $persona = 'sara';
+        } elseif ( has_term( 'toyna-cogis-2', $taxonomy ) ) {
+            $persona = 'toyna';
+        }
+		KM::identify( $_SESSION['km_identity'] );
+		KM::record( 'Viewed COGIS Help persona', array( 'persona' => $persona ) );
+    }
 
 		function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' )
@@ -669,6 +707,7 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
 
 	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_category' ) , 17 );
+	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_cchelp_personas' ) , 17 );
     // Add $_SESSION Support
     add_action('init', array( 'KM_Filter', 'myStartSession'), 1 );
     add_action('wp_logout', array( 'KM_Filter', 'myEndSession') );
