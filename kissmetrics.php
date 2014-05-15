@@ -261,7 +261,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Parse links in the content.
 		 * DC: When this is enabled, it breaks the "preventDefault" piece of AJAX event clicks. For instance, the /groups/tree-loop
 		 * ANSWER: http://support.kissmetrics.com/apis/javascript/index.html#tracking-outbound-link-clicks---trackclickonoutboundlink is a hog and this plugin's code applies it all the time (for local links without a domain, for instance).
-		 * 
+		 *
 		 *
 		 * @param array $matches The preg_replace_callback matches for links.
 		 * @return string The modified text.
@@ -329,7 +329,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 				?><script type="text/javascript">
 				  _kmq.push(function() {
 			  		var commented = function() {
-						<?php 			
+						<?php
 						if( get_option( 'cc_kissmetrics_identify_unregistered' ) ) { ?>
 				  			_kmq.push(['identify', document.getElementById('email').value]);
 						<?php } ?>
@@ -445,12 +445,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id, 
-														'Initiator username' => $initiator->user_login, 
-														'Initiator email' => $initiator->user_email,  
-														'Friend ID' => $friend_user_id, 
-														'Friend username' => $friend->user_login, 
-														'Friend email' => $friend->user_email, ) 
+			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id,
+														'Initiator username' => $initiator->user_login,
+														'Initiator email' => $initiator->user_email,
+														'Friend ID' => $friend_user_id,
+														'Friend username' => $friend->user_login,
+														'Friend email' => $friend->user_email, )
 			);
 
 		}
@@ -464,12 +464,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id, 
-														'Initiator username' => $initiator->user_login, 
-														'Initiator email' => $initiator->user_email,  
-														'Friend ID' => $friend_user_id, 
-														'Friend username' => $friend->user_login, 
-														'Friend email' => $friend->user_email, ) 
+			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id,
+														'Initiator username' => $initiator->user_login,
+														'Initiator email' => $initiator->user_email,
+														'Friend ID' => $friend_user_id,
+														'Friend username' => $friend->user_login,
+														'Friend email' => $friend->user_email, )
 			);
 		}
 
@@ -489,7 +489,7 @@ function myEndSession() {
 }
 
 function track_view_category() {
-$debug_flag = false;        
+$debug_flag = false;
 if ( $debug_flag ) {
     echo 'track_view_category() called.  is_category() is <b>' . ( is_category() ? 'TRUE' : 'false' ) . '</b><br />';
     echo 'is_user_logged_in() is <b>' . ( is_user_logged_in() ? 'TRUE' : 'false' ) . '</b><br />';
@@ -516,12 +516,12 @@ if ( $debug_flag ) echo 'KM::alias( ' . $_SESSION['km_identity']. ', ' . $curren
             // Set Identity as our current user's e-mail address
             $_SESSION['km_identity'] = $current_user->user_email;
         } else {
-if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';            
+if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';
             // We don't have a session identifier, so we need to get one
             if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
 if ( $debug_flag ) echo 'We are here #1.';
                 $new_idents = KM_FILTER::generate_identifier();
-if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' . 
+if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' .
                           '&nbsp;{km_identity: <u>' . $new_idents['md5'] . '</u> }<br />';  }
                 $_SESSION['km_identity'] = $new_idents['md5'];
             }
@@ -534,7 +534,6 @@ if ( $debug_flag ) echo '&nbsp;$category = ' . $category . '&nbsp;&nbsp;km_ident
     }
 
 function generate_identifier() {
-    echo 'generate_identifier() called <br />';
     $full_str = $_SERVER['HTTP_REFERER'] .
         rand( 0, date('U') ) .
         date('U') .
@@ -565,15 +564,15 @@ function generate_identifier() {
 				return false;
 
 			$author = get_user_by( 'id', $post->post_author );
- 
+
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $comment->comment_author_email );
-			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID, 
+			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID,
 														'Post title' => $post->post_title,
 														'Post type' => $post->post_type,
-														'Featured post' => $featured, 
+														'Featured post' => $featured,
 														'Author email' => $author->user_email
-														 ) 
+														 )
 			);
 
 		}
@@ -601,10 +600,10 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_filter( 'the_content', array( 'KM_Filter', 'the_content' ), 99 );
 	add_filter( 'comment_text', array( 'KM_Filter', 'comment_text' ), 99 );
 
-	// Login form tracking 
+	// Login form tracking
 	// add_action( 'login_footer', array( 'KM_Filter', 'track_login' ) );
 
-	// Register form tracking 
+	// Register form tracking
 	// add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
 	// add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
 
