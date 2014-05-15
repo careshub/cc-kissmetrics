@@ -375,28 +375,24 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Track when a user registers (BP-safe).
 		 */
 		public function track_registration_bp( $user_id ) {
-			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
-				include_once('km.php');
-				$user = get_user_by( 'id', $user_id );
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
 
-				KM::init( get_option( 'cc_kissmetrics_key' ) );
-				KM::identify( $user->user_email );
-				KM::record( 'Created account / registered' );
-			}
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Created account / registered' );
 		}
 
 		/**
 		 * Track when a user leaves the site.
 		 */
 		public function track_user_account_delete( $user_id ) {
-			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
-				include_once('km.php');
-				$user = get_user_by( 'id', $user_id );
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
 
-				KM::init( get_option( 'cc_kissmetrics_key' ) );
-				KM::identify( $user->user_email );
-				KM::record( 'Deleted account' );
-			}
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Deleted account' );
 		}
 		/**
 		 * Track when a user logs in.
