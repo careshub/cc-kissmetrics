@@ -649,8 +649,18 @@ function track_view_cchelp_personas() {
 
 		}
 
-	}
-}
+		function cogis_new_subgroup_form_submission( $entry, $form ){
+			include_once('km.php');
+			$user = wp_get_current_user();
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Submitted COGIS subgroup request form' );
+
+		}
+
+	} // End class 'KM_Filter'
+} // End class_exists check
 
 // If the JS URL is defined in the options, set the variable
 if( function_exists( 'get_option' ) ) {
@@ -712,4 +722,8 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
     add_action('init', array( 'KM_Filter', 'myStartSession'), 1 );
     add_action('wp_logout', array( 'KM_Filter', 'myEndSession') );
     //add_action('wp_login', 'myEndSession');
+
+    // Track GOGIS request group form submission
+    // 17 is the form id, so this will only fire on that form's submission
+	add_action( 'gform_after_submission_17', array( 'KM_Filter', 'cogis_new_subgroup_form_submission' ), 10, 2);    
 }
