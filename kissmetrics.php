@@ -374,7 +374,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user registers (BP-safe).
 		 */
-		function track_registration_bp( $user_id ) {
+		public function track_registration_bp( $user_id ) {
 			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
 				include_once('km.php');
 				$user = get_user_by( 'id', $user_id );
@@ -388,7 +388,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user leaves the site.
 		 */
-		function track_user_account_delete( $user_id ) {
+		public function track_user_account_delete( $user_id ) {
 			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
 				include_once('km.php');
 				$user = get_user_by( 'id', $user_id );
@@ -401,7 +401,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user logs in.
 		 */
-		function track_cc_login($user_login, $user) {
+		public function track_cc_login($user_login, $user) {
 		    include_once('km.php');
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
@@ -412,33 +412,71 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user joins a group.
 		 */
-		function track_join_bp_group( $group_id, $user_id ) {
+		public function track_join_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
+			$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
+			switch ( $reason ) {
+				case 'accepted':
+					$properties['Comments'] = 'User accepted group invitation';
+					break;
+				case 'approved':
+					$properties['Comments'] = 'Group admin approved user membership request';
+					break;
+			}
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Joined group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
+			KM::record( 'Joined group', $properties );
+		}
+		//User accepts invitation
+		public function track_accept_group_invite( $user_id, $group_id ) {
+			// Use basic join function to record activity
+			self::track_join_bp_group( $group_id, $user_id, 'accepted' );
+		}
+		//User membership request is approved
+		public function track_group_membership_request_approval( $user_id, $group_id ) {
+			// Use basic join function to record activity
+			self::track_join_bp_group( $group_id, $user_id, 'approved' );
 		}
 
 		/**
 		 * Track when a user leaves a group.
 		 */
-		function track_leave_bp_group( $group_id, $user_id ) {
+		public function track_leave_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
+			$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
+			switch ( $reason ) {
+				case 'removed':
+					$properties['Comments'] = 'Removed by group admin';
+					break;
+				case 'banned':
+					$properties['Comments'] = 'Banned by group admin';
+					break;
+			}
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Left group', array( 'Group' => $group_object->name, 'Group ID' => $group_id ) );
+			KM::record( 'Left group', $properties );
+		}
+		//User is removed by group admin
+		public function track_removed_bp_group( $group_id, $user_id  ) {
+			// Use basic leave function to record activity
+			self::track_leave_bp_group( $group_id, $user_id, 'removed' );
+		}
+		//User is banned by group admin
+		public function track_banned_bp_group( $group_id, $user_id  ) {
+			// Use basic leave function to record activity
+			self::track_leave_bp_group( $group_id, $user_id, 'banned' );
 		}
 
 		/**
 		 * Track when a friendship is created.
 		 */
-		function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+		public function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
 			include_once('km.php');
 			$initiator = get_user_by( 'id', $initiator_user_id );
 			$friend = get_user_by( 'id', $friend_user_id );
@@ -457,7 +495,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a friendship is canceled.
 		 */
-		function track_cancel_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+		public function track_cancel_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
 			include_once('km.php');
 			$initiator = get_user_by( 'id', $initiator_user_id );
 			$friend = get_user_by( 'id', $friend_user_id );
@@ -620,7 +658,12 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 	// Group joining and leaving
 	add_action( 'groups_join_group', array( 'KM_Filter', 'track_join_bp_group' ), 17, 2 );
+	add_action( 'groups_accept_invite', array( 'KM_Filter', 'track_accept_group_invite' ), 22, 2 );
+	add_action( 'groups_membership_accepted', array( 'KM_Filter', 'track_group_membership_request_approval' ), 22, 2 );
+	// Leaving, being removed, or banned
 	add_action( 'groups_leave_group', array( 'KM_Filter', 'track_leave_bp_group' ), 17, 2 );
+	add_action( 'groups_remove_member', array( 'KM_Filter', 'track_removed_bp_group' ), 17, 2 );
+	add_action( 'groups_ban_member', array( 'KM_Filter', 'track_banned_bp_group' ), 17, 2 );
 
 	// Friendships
 	add_action( 'friends_friendship_accepted', array( 'KM_Filter', 'track_create_friendship' ), 17, 3 );
