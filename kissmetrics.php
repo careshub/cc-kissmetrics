@@ -8,7 +8,7 @@ Description: A Community Commons-specific implementation of KISS Metrics.
 Version: 0.1
 Author: James Cutts, Mike Barbaro, Dave Cavins
 Author URI: http://www.communitycommons.org
- */
+*/
 
 define('CC_KISSMETRICS_VERSION', '0.1');
 define('CC_KISSMETRICS_PLUGIN_URL', plugin_dir_url( __FILE__ ));
@@ -261,7 +261,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Parse links in the content.
 		 * DC: When this is enabled, it breaks the "preventDefault" piece of AJAX event clicks. For instance, the /groups/tree-loop
 		 * ANSWER: http://support.kissmetrics.com/apis/javascript/index.html#tracking-outbound-link-clicks---trackclickonoutboundlink is a hog and this plugin's code applies it all the time (for local links without a domain, for instance).
-		 * 
+		 *
 		 *
 		 * @param array $matches The preg_replace_callback matches for links.
 		 * @return string The modified text.
@@ -329,7 +329,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 				?><script type="text/javascript">
 				  _kmq.push(function() {
 			  		var commented = function() {
-						<?php 			
+						<?php
 						if( get_option( 'cc_kissmetrics_identify_unregistered' ) ) { ?>
 				  			_kmq.push(['identify', document.getElementById('email').value]);
 						<?php } ?>
@@ -375,28 +375,24 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Track when a user registers (BP-safe).
 		 */
 		public function track_registration_bp( $user_id ) {
-			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
-				include_once('km.php');
-				$user = get_user_by( 'id', $user_id );
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
 
-				KM::init( get_option( 'cc_kissmetrics_key' ) );
-				KM::identify( $user->user_email );
-				KM::record( 'Created account / registered' );
-			}
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Created account / registered' );
 		}
 
 		/**
 		 * Track when a user leaves the site.
 		 */
 		public function track_user_account_delete( $user_id ) {
-			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
-				include_once('km.php');
-				$user = get_user_by( 'id', $user_id );
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
 
-				KM::init( get_option( 'cc_kissmetrics_key' ) );
-				KM::identify( $user->user_email );
-				KM::record( 'Deleted account' );
-			}
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Deleted account' );
 		}
 		/**
 		 * Track when a user logs in.
@@ -483,12 +479,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id, 
-														'Initiator username' => $initiator->user_login, 
-														'Initiator email' => $initiator->user_email,  
-														'Friend ID' => $friend_user_id, 
-														'Friend username' => $friend->user_login, 
-														'Friend email' => $friend->user_email, ) 
+			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id,
+														'Initiator username' => $initiator->user_login,
+														'Initiator email' => $initiator->user_email,
+														'Friend ID' => $friend_user_id,
+														'Friend username' => $friend->user_login,
+														'Friend email' => $friend->user_email, )
 			);
 
 		}
@@ -502,12 +498,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id, 
-														'Initiator username' => $initiator->user_login, 
-														'Initiator email' => $initiator->user_email,  
-														'Friend ID' => $friend_user_id, 
-														'Friend username' => $friend->user_login, 
-														'Friend email' => $friend->user_email, ) 
+			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id,
+														'Initiator username' => $initiator->user_login,
+														'Initiator email' => $initiator->user_email,
+														'Friend ID' => $friend_user_id,
+														'Friend username' => $friend->user_login,
+														'Friend email' => $friend->user_email, )
 			);
 		}
 
@@ -526,7 +522,7 @@ function myEndSession() {
 }
 
 function track_view_category() {
-$debug_flag = false;        
+$debug_flag = false;
 if ( $debug_flag ) {
     echo 'track_view_category() called.  is_category() is <b>' . ( is_category() ? 'TRUE' : 'false' ) . '</b><br />';
     echo 'is_user_logged_in() is <b>' . ( is_user_logged_in() ? 'TRUE' : 'false' ) . '</b><br />';
@@ -553,12 +549,12 @@ if ( $debug_flag ) echo 'KM::alias( ' . $_SESSION['km_identity']. ', ' . $curren
             // Set Identity as our current user's e-mail address
             $_SESSION['km_identity'] = $current_user->user_email;
         } else {
-if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';            
+if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';
             // We don't have a session identifier, so we need to get one
             if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
 if ( $debug_flag ) echo 'We are here #1.';
                 $new_idents = KM_FILTER::generate_identifier();
-if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' . 
+if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' .
                           '&nbsp;{km_identity: <u>' . $new_idents['md5'] . '</u> }<br />';  }
                 $_SESSION['km_identity'] = $new_idents['md5'];
             }
@@ -580,6 +576,7 @@ function generate_identifier() {
 
 function track_view_cchelp_personas() {
         $taxonomy = 'cchelp_personas';
+		echo '<b>track_view_cchelp_personas</b> Taxonomy = ' . $taxonomy . '<br />';
         if ( ! is_tax( $taxonomy ) ) return;
 		include_once( 'km.php' );
         // Start the Kissmetrics plugin
@@ -604,24 +601,14 @@ function track_view_cchelp_personas() {
                 $_SESSION['km_identity'] = $new_idents['md5'];
             }
         }
-        $persona = '';
-        if ( has_term( 'daniel-cogis-2', $taxonomy ) ) {
-            $persona .= 'daniel ';
-        } 
-        if ( has_term( 'maria-cogis-2', $taxonomy ) ) {
-            $persona .= 'maria ';
-        } 
-        if ( has_term( 'sara-cogis-2', $taxonomy ) ) {
-            $persona .= 'sara ';
-        } 
-        if ( has_term( 'toyna-cogis-2', $taxonomy ) ) {
-            $persona .= 'toyna ';
-        }
+		$uri = $_SERVER['REQUEST_URI'];
+		$personas = preg_match( "/personas\/(\w+)-cogis-2/", $uri, $matches);
+		$persona  = $matches[1];
 		KM::identify( $_SESSION['km_identity'] );
 		KM::record( 'Viewed COGIS Help persona', array( 'persona' => $persona ) );
     }
 
-         function track_comment_approval( $comment_id, $comment_status ) {
+		function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' )
 				return false;
 
@@ -644,15 +631,15 @@ function track_view_cchelp_personas() {
 				return false;
 
 			$author = get_user_by( 'id', $post->post_author );
- 
+
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $comment->comment_author_email );
-			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID, 
+			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID,
 														'Post title' => $post->post_title,
 														'Post type' => $post->post_type,
-														'Featured post' => $featured, 
+														'Featured post' => $featured,
 														'Author email' => $author->user_email
-														 ) 
+														 )
 			);
 
 		}
@@ -690,10 +677,10 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_filter( 'the_content', array( 'KM_Filter', 'the_content' ), 99 );
 	add_filter( 'comment_text', array( 'KM_Filter', 'comment_text' ), 99 );
 
-	// Login form tracking 
+	// Login form tracking
 	// add_action( 'login_footer', array( 'KM_Filter', 'track_login' ) );
 
-	// Register form tracking 
+	// Register form tracking
 	// add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
 	// add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
 
@@ -735,5 +722,3 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
     // 17 is the form id, so this will only fire on that form's submission
 	add_action( 'gform_after_submission_17', array( 'KM_Filter', 'cogis_new_subgroup_form_submission' ), 10, 2);    
 }
-
-	
