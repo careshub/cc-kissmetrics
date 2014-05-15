@@ -473,6 +473,75 @@ if( !class_exists( 'KM_Filter' ) ) {
 			);
 		}
 
+/** JHC
+ * Track when a Category page is displayed
+**/
+
+
+function myStartSession() {
+    if(!session_id()) {
+        session_start();
+    }
+}
+
+function myEndSession() {
+    session_destroy ();
+}
+
+function track_view_category() {
+$debug_flag = false;        
+if ( $debug_flag ) {
+    echo 'track_view_category() called.  is_category() is <b>' . ( is_category() ? 'TRUE' : 'false' ) . '</b><br />';
+    echo 'is_user_logged_in() is <b>' . ( is_user_logged_in() ? 'TRUE' : 'false' ) . '</b><br />';
+}
+        if ( ! is_category() ) return;
+		include_once( 'km.php' );
+        // Start the Kissmetrics plugin
+		KM::init( get_option( 'cc_kissmetrics_key' ) );
+if ( $debug_flag ) echo 'Kissmetrics Key = ' . get_option( 'cc_kissmetrics_key' ) . '<br />';
+        // Check if user is logged in and has NOT been aliased against their non-logged in ID
+        //       then we have work to do
+		if ( is_user_logged_in() && ! isset( $_SESSION['km_aliased'] ) ) {
+            // Determine identity of user
+			$current_user = wp_get_current_user();
+if ( $debug_flag ) { echo '&nbsp;[User Name: <b>' . $current_user->user_login . '</b>' .
+                          '&nbsp;EMail: <b>' . $current_user->user_email . '</b>]'; }
+            // We've not aliased unlogged ID
+            if ( ! $_SESSION['km_aliased'] && isset( $_SESSION['km_identity'] ) ) {
+if ( $debug_flag ) echo 'KM::alias( ' . $_SESSION['km_identity']. ', ' . $current_user->user_email . ')<br />';
+                // Tell KissMetrics about Alias and make note that we have done so.
+                KM::alias( $_SESSION['km_identity'], $current_user->user_email );
+                $_SESSION['km_aliased'] = true;
+            }
+            // Set Identity as our current user's e-mail address
+            $_SESSION['km_identity'] = $current_user->user_email;
+        } else {
+if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';            
+            // We don't have a session identifier, so we need to get one
+            if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
+if ( $debug_flag ) echo 'We are here #1.';
+                $new_idents = KM_FILTER::generate_identifier();
+if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' . 
+                          '&nbsp;{km_identity: <u>' . $new_idents['md5'] . '</u> }<br />';  }
+                $_SESSION['km_identity'] = $new_idents['md5'];
+            }
+if ( $debug_flag ) echo 'We are here #2.';
+		}
+		$category = single_cat_title( '', false );
+if ( $debug_flag ) echo '&nbsp;$category = ' . $category . '&nbsp;&nbsp;km_identity = ' . $_SESSION['km_identity'] . '<br />';
+		KM::identify( $_SESSION['km_identity'] );
+		KM::record( 'Viewed Category', array( 'category' => $category ) );
+    }
+
+function generate_identifier() {
+    echo 'generate_identifier() called <br />';
+    $full_str = $_SERVER['HTTP_REFERER'] .
+        rand( 0, date('U') ) .
+        date('U') .
+        $_SERVER['HTTP_USER_AGENT'];
+    return array('md5' => md5($full_str), 'full_str' => $full_str);
+}
+
 		function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' )
 				return false;
@@ -561,4 +630,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
 
+	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_category' ) , 17 );
+    // Add $_SESSION Support
+    add_action('init', array( 'KM_Filter', 'myStartSession'), 1 );
+    add_action('wp_logout', array( 'KM_Filter', 'myEndSession') );
+    //add_action('wp_login', 'myEndSession');
 }
