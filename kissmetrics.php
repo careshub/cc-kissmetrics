@@ -576,7 +576,7 @@ function generate_identifier() {
 
 function track_view_cchelp_personas() {
         $taxonomy = 'cchelp_personas';
-		echo '<b>track_view_cchelp_personas</b> Taxonomy = ' . $taxonomy . '<br />';
+//		echo '<b>track_view_cchelp_personas</b> Taxonomy = ' . $taxonomy . '<br />';
         if ( ! is_tax( $taxonomy ) ) return;
 		include_once( 'km.php' );
         // Start the Kissmetrics plugin
