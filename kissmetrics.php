@@ -416,6 +416,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 			switch ( $reason ) {
 				case 'accepted':
 					$properties['Comments'] = 'User accepted group invitation';
+					// Note: the inviter's user_id has been deleted from the group_membership table before this action, so we can't record the invitation as part of this event, sadly.
 					break;
 				case 'approved':
 					$properties['Comments'] = 'Group admin approved user membership request';
