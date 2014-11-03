@@ -508,6 +508,35 @@ if( !class_exists( 'KM_Filter' ) ) {
 			);
 		}
 
+		/**
+		* BuddyPress Docs - Track creation and editing of docs.
+		*/
+		public function track_new_bp_doc( $args ) {
+
+			include_once('km.php');
+
+			$doc_id = $args->doc_id;
+			$user_id = get_post_meta( $doc_id, 'bp_docs_last_editor', true );
+						$friend = get_user_by( 'id', $friend_user_id );
+			$user = get_user_by( 'id', $user_id );
+
+			if ( $group_id = bp_docs_get_associated_group_id( $doc_id ) ) {
+				$group_object = groups_get_group( array( 'group_id' => $group_id ) );
+				$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
+			}
+
+			if ( $args->is_new_doc ) {
+				$event = "Created new BuddyPress Doc.";
+			} else {
+				$event = "Edited BuddyPress Doc.";
+			}
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( $event, $properties );
+
+		}
+
 /** JHC
  * Track when a Category page is displayed
 **/
@@ -708,6 +737,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Friendships
 	add_action( 'friends_friendship_accepted', array( 'KM_Filter', 'track_create_friendship' ), 17, 3 );
 	add_action( 'friends_friendship_deleted', array( 'KM_Filter', 'track_cancel_friendship' ), 17, 3 );
+
+	//BuddyPress Docs
+	add_action( 'bp_docs_doc_saved', array( 'KM_Filter', 'track_new_bp_doc' ) );
 
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
