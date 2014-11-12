@@ -536,6 +536,25 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( $event, $properties );
 
 		}
+		/**
+		* Activity stream - Track posts and replies (separately).
+		*/
+		public function track_new_activity_update( $content, $user_id, $activity_id ) {
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Posted activity stream update.' );
+		}
+		public function track_new_activity_reply( $comment_id, $r, $activity ) {
+			include_once('km.php');
+			$user = get_user_by( 'id', $r['user_id'] );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Replied to activity stream post.' );
+		}
 
 /** JHC
  * Track when a Category page is displayed
@@ -740,6 +759,10 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 	//BuddyPress Docs
 	add_action( 'bp_docs_doc_saved', array( 'KM_Filter', 'track_new_bp_doc' ) );
+
+	//BuddyPress Activity Stream
+	add_action( 'bp_activity_posted_update', array( 'KM_Filter', 'track_new_activity_update' ), 12, 3 );
+	add_action( 'bp_activity_comment_posted', array( 'KM_Filter', 'track_new_activity_reply' ), 12, 3 );
 
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
