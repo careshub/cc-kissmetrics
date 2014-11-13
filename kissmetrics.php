@@ -397,7 +397,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user logs in.
 		 */
-		public function track_cc_login($user_login, $user) {
+		public function track_cc_login( $user_login, $user ) {
 		    include_once('km.php');
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
@@ -539,22 +539,44 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		* Activity stream - Track posts and replies (separately).
 		*/
-		public function track_new_activity_update( $content, $user_id, $activity_id ) {
+		public function track_activity_stream_posts( $args ) {
+			// We only care about some activity types
+			// $args['type'] => activity_update 
+			//		&& [component] => activity is a post to the user's stream
+			// 		&& [component] => groups is a post to a group's stream
+			// $args['type'] => activity_comment 
+			//		&& [component] => activity is a reply to an activity update in the user's stream OR in a group stream
+			$event = '';
+
+			if ( $args['type'] == 'activity_update' ) {
+				if ( $args['component'] == 'activity' ) {
+					$event = 'Posted activity stream update.';
+				} else if ( $args['component'] == 'groups' ) {
+					$event = 'Posted group activity stream update.';
+				}
+			} else if ( $args['type'] == 'activity_comment' ) {
+				$event = 'Replied to activity stream update.';
+			}
+
+			if ( $event ) {
+				include_once('km.php');
+				$user = get_user_by( 'id', $args['user_id'] );
+
+				KM::init( get_option( 'cc_kissmetrics_key' ) );
+				KM::identify( $user->user_email );
+				KM::record( $event );
+			}
+		}
+		// Track when a user favorites an activity item
+		public function track_activity_stream_favorite( $activity_id, $user_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Posted activity stream update.' );
+			KM::record( 'Favorited an activity stream update.' );
 		}
-		public function track_new_activity_reply( $comment_id, $r, $activity ) {
-			include_once('km.php');
-			$user = get_user_by( 'id', $r['user_id'] );
-
-			KM::init( get_option( 'cc_kissmetrics_key' ) );
-			KM::identify( $user->user_email );
-			KM::record( 'Replied to activity stream post.' );
-		}
+		
 
 /** JHC
  * Track when a Category page is displayed
@@ -761,8 +783,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'bp_docs_doc_saved', array( 'KM_Filter', 'track_new_bp_doc' ) );
 
 	//BuddyPress Activity Stream
-	add_action( 'bp_activity_posted_update', array( 'KM_Filter', 'track_new_activity_update' ), 12, 3 );
-	add_action( 'bp_activity_comment_posted', array( 'KM_Filter', 'track_new_activity_reply' ), 12, 3 );
+	add_action( 'bp_activity_add', array( 'KM_Filter', 'track_activity_stream_posts' ), 12, 3 );
+	add_action( 'bp_activity_add_user_favorite', array( 'KM_Filter', 'track_activity_stream_favorite' ), 12, 2 );
+
 
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
