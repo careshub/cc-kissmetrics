@@ -536,6 +536,21 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( $event, $properties );
 
 		}
+
+
+		/**
+		 * Track when a user votes in the Salud America video contest.
+		 * @param 	WP_User  $member WP_User object.
+		 */
+		public function track_sa_video_contest_vote( $user ) {
+			include_once('km.php');
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Voted in Salud America video contest' );
+		}
+
+
 		/**
 		* Activity stream - Track posts and replies (separately).
 		*/
@@ -788,7 +803,11 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 
 	// Comments
-	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2);
+	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
+
+	// Salud America
+	// Voted on video contest
+	add_action( 'after_sa_video_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 1 );
 
 	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_category' ) , 17 );
 	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_cchelp_personas' ) , 17 );
