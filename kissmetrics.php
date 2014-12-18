@@ -54,7 +54,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			<?php
 				// Identify authenticated users
-				if( get_option( 'cc_kissmetrics_identify_users' ) && is_user_logged_in() ) {
+				if( is_user_logged_in() ) {
 					global $current_user;
 					get_currentuserinfo();
 					?>_kmq.push(['identify', '<?php echo $current_user->user_email ?>']);
@@ -116,74 +116,59 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
 				}
+
+				// Taxonomy pages
+				// Channel (category) pages
+				if ( is_category() ) {
+					$cat = array(
+						'record',
+						'Viewed Category',
+						array(
+							'Viewed category archive' => single_cat_title( '', false ),
+						)
+					);
+					?>_kmq.push(<?php echo json_encode( $cat ); ?>);
+					<?php
+				}
+				// Tag pages
+				if ( is_tag() ) {
+					$tag = array(
+						'record',
+						'Viewed Tag',
+						array(
+							'Viewed tag archive' => single_tag_title( '', false ),
+						)
+					);
+					?>_kmq.push(<?php echo json_encode( $tag ); ?>);
+					<?php
+				}
+
+				// Other taxonomies
+				if ( is_tax() ) {
+					global $wp_query;
+					if ( isset( $wp_query->query_vars['term'] ) ) {
+						$tax_term = get_term_by( 'slug', $wp_query->query_vars['term'], $wp_query->query_vars['taxonomy'] );
+					}
+					if ( $tax_term ) {
+						$action = 'Viewed ' . $wp_query->query_vars['taxonomy'] . ' taxonomy term';
+						$property_key = 'Viewed ' . $wp_query->query_vars['taxonomy'] . ' taxonomy term archive';
+						$tax_item = array(
+							'record',
+							$action,
+							array(
+								$property_key => $tax_term->name,
+							)
+						);
+
+						?>_kmq.push(<?php echo json_encode( $tax_item ); ?>);
+						<?php
+					}
+				} 
+
 				?></script>
 				<?php
 			}
 
-
-		}
-
-
-		/**
-		 * Creates a "View post" event for single post views when the_content is called.
-		 * DC: This works poorly. If you view an page with a custom loop showing 10 articles (like /maps-data) in short form, each one gets a "view".
-		 *
-		 * @param string $text The content text.
-		 */
-		function the_content( $text ) {
-			$is_post = is_single();
-
-			if( ( $is_post || is_page() ) && get_option( 'cc_kissmetrics_track_views' ) ) {
-				global $post;
-
-				$categories = array();
-				foreach( (get_the_category()) as $category ) {
-					$categories[] = $category->cat_name;
-				}
-
-				$is_post = is_single();
-
-				$kmq = array(
-					'record',
-					'Viewed ' . ( $is_post ? 'post' : 'page' )
-				);
-
-				if( $is_post ) {
-					// Posts (have categories)
-					$kmq[] = array(
-						'ID' => $post->ID,
-						'Title' => get_the_title(),
-						'Categories' => $categories
-					);
-				} else {
-					// Pages
-					$kmq[] = array(
-						'ID' => $post->ID,
-						'Title' => get_the_title()
-					);
-				}
-
-				$text .= "<script>_kmq.push(" . json_encode( $kmq ) . ");</script>";
-			}
-
-			// Track all links
-			if( get_option( 'cc_kissmetrics_track_links' ) )
-				$text = preg_replace_callback( KM_Filter::$link_regex, array( 'KM_Filter', 'parse_content_link' ), $text );
-
-			return $text;
-		}
-
-
-		/**
-		 * Parse comments for links and add tracking code.
-		 *
-		 * @param string $text The comment text.
-		 */
-		function comment_text( $text ) {
-			if( get_option( 'cc_kissmetrics_track_comment_links' ) )
-				$text = preg_replace_callback( KM_Filter::$link_regex, array( 'KM_Filter', 'parse_comment_link' ), $text );
-
-			return $text;
 		}
 
 
@@ -206,165 +191,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 				$domain = array( '' );
 
 			return array( 'domain' => $domain[0], 'host' => $host );
-		}
-
-
-		/**
-		 * Parses a link, adds an ID, and tracks a link click. Automatically detects if the link is
-		 * to an internal or external resource.
-		 *
-		 * @param string $page_title The title of the page the link is found on.
-		 * @param string $type The type of tracking code to add ("Comment", "Article")
-		 * @param array $link_matches The group of matches (from preg_match) on the link.
-		 * @return string A link as an HTML string.
-		 */
-		function parse_link( $page_title, $type, $link_matches ) {
-			static $id_attr_regex = '/id\s*=\s*[\'"](.+?)[\'"]/i';
-
-			$target = KM_Filter::get_domain( $link_matches[2] );
-			$id = '';
-
-			// Attempt to find the link's "id" attribute, if it has one (if not, we'll give it one)
-			preg_match( $id_attr_regex, $link_matches[1], $id_attr );
-			if( !$id_attr ) {
-				preg_match( $id_attr_regex, $link_matches[3], $id_attr );
-
-				// Still no link id?! Ok.
-				if( !$id_attr ) {
-					$id = uniqid( 'link_' );
-				} else {
-					$id = $id_attr[1];
-				}
-			} else {
-				$id = $id_attr[1];
-			}
-
-			$kmq = array(
-				( $target['domain'] !== $origin['domain'] ) ? 'trackClickOnOutboundLink' : 'trackClick',
-				$id,
-				$type . ' link clicked',
-				array(
-					'Title' => $link_matches[4],
-					'Page' => $page_title
-				)
-			);
-
-			return '<a ' . $link_matches[1] . 'href="' . $link_matches[2] . '"' . $link_matches[3]
-			        . ( !$id_attr ? ' id="' . $id . '"' : '' ) . '>'
-			        . $link_matches[4]
-			        . '</a>'
-			        . '<script>_kmq.push(' . json_encode($kmq) . ');</script>';
-		}
-
-
-		/**
-		 * Parse links in the content.
-		 * DC: When this is enabled, it breaks the "preventDefault" piece of AJAX event clicks. For instance, the /groups/tree-loop
-		 * ANSWER: http://support.kissmetrics.com/apis/javascript/index.html#tracking-outbound-link-clicks---trackclickonoutboundlink is a hog and this plugin's code applies it all the time (for local links without a domain, for instance).
-		 *
-		 *
-		 * @param array $matches The preg_replace_callback matches for links.
-		 * @return string The modified text.
-		 */
-		function parse_content_link( $matches ) {
-			return KM_Filter::parse_link( get_the_title(), 'Article', $matches );
-		}
-
-
-		/**
-		 * Parse links in the comments.
-		 *
-		 * @param array $matches The preg_replace_callback matches for links.
-		 * @return string The modified text.
-		 */
-		function parse_comment_link( $matches ) {
-			return KM_Filter::parse_link( get_the_title(), 'Comment', $matches );
-		}
-
-
-		/**
-		 * Track when a user signs in.
-		 */
-		function track_login() {
-			if( get_option( 'cc_kissmetrics_track_login' ) ) {
-			?><script type="text/javascript">
-				_kmq.push(['trackSubmit', 'loginform', 'Signed in']);
-			</script><?php
-			}
-		}
-
-
-		/**
-		 * Track when a user registers.
-		 */
-		function track_register() {
-			if( get_option( 'cc_kissmetrics_track_signup' ) ) {
-			?><script type="text/javascript">
-				_kmq.push(['trackSubmit', 'registerform', 'Created account / registered']);
-			</script><?php
-			}
-		}
-
-		/**
-		 * Track when a user views the registration page.
-		 */
-		function track_register_view() {
-			if( get_option( 'cc_kissmetrics_track_signup_view' ) ) {
-			?><script type="text/javascript">
-			  _kmq.push(function() {
-			    if(document.getElementById('registerform')) {
-			    	_kmq.push(['record', 'Viewed signup page']);
-			    }
-			  });
-			</script><?php
-			}
-		}
-
-
-		/**
-		 * Track comment form submissions.
-		 */
-		function track_comment_form() {
-			if( ( is_single() || is_page() ) && get_option( 'cc_kissmetrics_track_comment' ) ) {
-				?><script type="text/javascript">
-				  _kmq.push(function() {
-			  		var commented = function() {
-						<?php
-						if( get_option( 'cc_kissmetrics_identify_unregistered' ) ) { ?>
-				  			_kmq.push(['identify', document.getElementById('email').value]);
-						<?php } ?>
-			  				_kmq.push(['record', 'Commented', {
-								name: document.getElementById( 'author' ).value,
-								email: document.getElementById( 'email' ).value,
-								comment: document.getElementById( 'comment' ).value
-							}]);
-			  			},
-						el = document.getElementById('submit');
-
-					if(el.addEventListener) {
-						el.addEventListener('mousedown', commented, false);
-					} else if(el.attachEvent)  {
-						el.attachEvent('onmousedown', commented);
-					}
-			  });
-			</script><?php
-			}
-		}
-
-
-		/**
-		 * Indentify users by email address when they submit a comment.
-		 */
-		function identify_comment_user() {
-			// Get this comment author's email address.
-			$comment_author_email = $_COOKIE['comment_author_email_' . COOKIEHASH];
-
-			// Only track the commenter by email address if they're not signed in already.
-			if( !is_user_logged_in() && ( is_single() || is_page() ) && $comment_author_email && get_option( 'cc_kissmetrics_identify_unregistered' ) ) {
-				?><script type="text/javascript">
-					_kmq.push(['identify', '<?php echo $comment_author_email; ?>']);
-				</script><?php
-			}
 		}
 
 		/*********************************************
@@ -592,108 +418,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( 'Favorited an activity stream update.' );
 		}
 		
-
-/** JHC
- * Track when a Category page is displayed
-**/
-
-function myStartSession() {
-    if(!session_id()) {
-        session_start();
-    }
-}
-
-function myEndSession() {
-    session_destroy ();
-}
-
-function track_view_category() {
-$debug_flag = false;
-if ( $debug_flag ) {
-    echo 'track_view_category() called.  is_category() is <b>' . ( is_category() ? 'TRUE' : 'false' ) . '</b><br />';
-    echo 'is_user_logged_in() is <b>' . ( is_user_logged_in() ? 'TRUE' : 'false' ) . '</b><br />';
-}
-        if ( ! is_category() ) return;
-		include_once( 'km.php' );
-        // Start the Kissmetrics plugin
-		KM::init( get_option( 'cc_kissmetrics_key' ) );
-if ( $debug_flag ) echo 'Kissmetrics Key = ' . get_option( 'cc_kissmetrics_key' ) . '<br />';
-        // Check if user is logged in and has NOT been aliased against their non-logged in ID
-        //       then we have work to do
-		if ( is_user_logged_in() && ! isset( $_SESSION['km_aliased'] ) ) {
-            // Determine identity of user
-			$current_user = wp_get_current_user();
-if ( $debug_flag ) { echo '&nbsp;[User Name: <b>' . $current_user->user_login . '</b>' .
-                          '&nbsp;EMail: <b>' . $current_user->user_email . '</b>]'; }
-            // We've not aliased unlogged ID
-            if ( ! $_SESSION['km_aliased'] && isset( $_SESSION['km_identity'] ) ) {
-if ( $debug_flag ) echo 'KM::alias( ' . $_SESSION['km_identity']. ', ' . $current_user->user_email . ')<br />';
-                // Tell KissMetrics about Alias and make note that we have done so.
-                KM::alias( $_SESSION['km_identity'], $current_user->user_email );
-                $_SESSION['km_aliased'] = true;
-            }
-            // Set Identity as our current user's e-mail address
-            $_SESSION['km_identity'] = $current_user->user_email;
-        } else {
-if ( $debug_flag ) echo 'User Not logged in.  "! isset( $_SESSION[\'km_identity\'] )" is ' . ( ! isset( $_SESSION['km_identity'] ) ? 'TRUE' : 'false' ) . '<br />';
-            // We don't have a session identifier, so we need to get one
-            if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
-if ( $debug_flag ) echo 'We are here #1.';
-                $new_idents = KM_FILTER::generate_identifier();
-if ( $debug_flag ) {echo '&nbsp;{Full String: <u>'  . $new_idents['full_str'] . '</u> }' .
-                          '&nbsp;{km_identity: <u>' . $new_idents['md5'] . '</u> }<br />';  }
-                $_SESSION['km_identity'] = $new_idents['md5'];
-            }
-if ( $debug_flag ) echo 'We are here #2.';
-		}
-		$category = single_cat_title( '', false );
-if ( $debug_flag ) echo '&nbsp;$category = ' . $category . '&nbsp;&nbsp;km_identity = ' . $_SESSION['km_identity'] . '<br />';
-		KM::identify( $_SESSION['km_identity'] );
-		KM::record( 'Viewed Category', array( 'category' => $category ) );
-    }
-
-function generate_identifier() {
-    $full_str = $_SERVER['HTTP_REFERER'] .
-        rand( 0, date('U') ) .
-        date('U') .
-        $_SERVER['HTTP_USER_AGENT'];
-    return array('md5' => md5($full_str), 'full_str' => $full_str);
-}
-
-function track_view_cchelp_personas() {
-        $taxonomy = 'cchelp_personas';
-//		echo '<b>track_view_cchelp_personas</b> Taxonomy = ' . $taxonomy . '<br />';
-        if ( ! is_tax( $taxonomy ) ) return;
-		include_once( 'km.php' );
-        // Start the Kissmetrics plugin
-		KM::init( get_option( 'cc_kissmetrics_key' ) );
-        // Check if user is logged in and has NOT been aliased against their non-logged in ID
-        //       then we have work to do
-		if ( is_user_logged_in() && ! isset( $_SESSION['km_aliased'] ) ) {
-            // Determine identity of user
-			$current_user = wp_get_current_user();
-            // We've not aliased unlogged ID
-            if ( ! $_SESSION['km_aliased'] && isset( $_SESSION['km_identity'] ) ) {
-                // Tell KissMetrics about Alias and make note that we have done so.
-                KM::alias( $_SESSION['km_identity'], $current_user->user_email );
-                $_SESSION['km_aliased'] = true;
-            }
-            // Set Identity as our current user's e-mail address
-            $_SESSION['km_identity'] = $current_user->user_email;
-        } else {
-            // We don't have a session identifier, so we need to get one
-            if ( ( ! isset( $_SESSION['km_identity'] ) ) ){
-                $new_idents = KM_FILTER::generate_identifier();
-                $_SESSION['km_identity'] = $new_idents['md5'];
-            }
-        }
-		$uri = $_SERVER['REQUEST_URI'];
-		$personas = preg_match( "/personas\/(\w+)-cogis-2/", $uri, $matches);
-		$persona  = $matches[1];
-		KM::identify( $_SESSION['km_identity'] );
-		KM::record( 'Viewed COGIS Help persona', array( 'persona' => $persona ) );
-    }
-
 		function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' )
 				return false;
@@ -740,6 +464,17 @@ function track_view_cchelp_personas() {
 
 		}
 
+		// Helper functions
+		// If the user is not logged in, you can use this function to get the best value from KISS's cookies
+		// From within this class, use $identity = self::read_js_identity()
+		public function read_js_identity() {
+		  if ( isset( $_COOKIE['km_ni'] ) ) {
+		    return $_COOKIE['km_ni'];
+		  } else if ( isset( $_COOKIE['km_ai'] ) ) {
+		    return $_COOKIE['km_ai'];
+		  }
+		}
+
 	} // End class 'KM_Filter'
 } // End class_exists check
 
@@ -752,26 +487,15 @@ if( function_exists( 'get_option' ) ) {
 $origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 
 // Output analytics to all pages and the login page
+	// Page-view listeners
+	// - Clicks on Grant Support: http://www.communitycommons.org/chi-planning/
+	// - Category archive views
+	// - Tag archive views
+	// - Custom taxonomy archive views
 add_action( 'wp_head', array( 'KM_Filter', 'output_analytics' ) );
 add_action( 'login_head', array( 'KM_Filter', 'output_analytics' ) );
 
-// On all pages (if enabled), identify comments by user
-add_action( 'wp_head', array( 'KM_Filter', 'identify_comment_user' ) );
-
 if( $km_key != '' && function_exists( 'get_option' ) ) {
-	// Filter links for tracking
-	add_filter( 'the_content', array( 'KM_Filter', 'the_content' ), 99 );
-	add_filter( 'comment_text', array( 'KM_Filter', 'comment_text' ), 99 );
-
-	// Login form tracking
-	// add_action( 'login_footer', array( 'KM_Filter', 'track_login' ) );
-
-	// Register form tracking
-	// add_action( 'login_head', array( 'KM_Filter', 'track_register_view' ) );
-	// add_action( 'login_footer', array( 'KM_Filter', 'track_register' ) );
-
-	// Comment form tracking
-	add_action( 'comment_form', array( 'KM_Filter', 'track_comment_form' ) );
 
 	// CC event tracking *****************************************************************
 	// Registration, account deletion
@@ -779,7 +503,7 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'delete_user', array( 'KM_Filter', 'track_user_account_delete' ), 17 );
 
 	//Signing in
-	add_action('wp_login', array( 'KM_Filter', 'track_cc_login' ), 45, 2);
+	add_action( 'wp_login', array( 'KM_Filter', 'track_cc_login' ), 45, 2 );
 
 	// Group joining and leaving
 	add_action( 'groups_join_group', array( 'KM_Filter', 'track_join_bp_group' ), 17, 2 );
@@ -801,20 +525,12 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'bp_activity_add', array( 'KM_Filter', 'track_activity_stream_posts' ), 12, 3 );
 	add_action( 'bp_activity_add_user_favorite', array( 'KM_Filter', 'track_activity_stream_favorite' ), 12, 2 );
 
-
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
 
 	// Salud America
 	// Voted on video contest
 	add_action( 'after_sa_video_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 1 );
-
-	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_category' ) , 17 );
-	add_action( 'wp_footer', array( 'KM_Filter', 'track_view_cchelp_personas' ) , 17 );
-    // Add $_SESSION Support
-    add_action('init', array( 'KM_Filter', 'myStartSession'), 1 );
-    add_action('wp_logout', array( 'KM_Filter', 'myEndSession') );
-    //add_action('wp_login', 'myEndSession');
 
     // Track GOGIS request group form submission
     // 17 is the form id, so this will only fire on that form's submission
