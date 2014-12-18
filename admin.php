@@ -92,7 +92,7 @@ if( !class_exists( 'CCKM_Admin' ) ) {
 									<span class="description">Get your API key from the <a href="https://app.kissmetrics.com/settings">KISSmetrics Settings</a> page.</span>
 								</td>
 							</tr>
-
+							<?php /* ?>
 							<tr valign="top">
 								<th scope="row">
 									Identity
@@ -176,6 +176,7 @@ if( !class_exists( 'CCKM_Admin' ) ) {
 									</label>
 								</td>
 							</tr>
+							<?php */ ?>
 						</tbody>
 					</table>
 
