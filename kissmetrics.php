@@ -163,7 +163,23 @@ if( !class_exists( 'KM_Filter' ) ) {
 						?>_kmq.push(<?php echo json_encode( $tax_item ); ?>);
 						<?php
 					}
-				} 
+				}
+
+				// Search results page
+				if ( is_search() ) {
+					if ( $search_terms = get_search_query() ) {
+						$search_record = array(
+							'record',
+							'Searched site',
+							array(
+								'Site search terms' => $search_terms,
+							)
+						);
+
+						?>_kmq.push(<?php echo json_encode( $search_record ); ?>);
+						<?php
+					}
+				}
 
 				?></script>
 				<?php
@@ -237,17 +253,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		public function track_join_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
-			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
-			$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
-			switch ( $reason ) {
-				case 'accepted':
-					$properties['Comments'] = 'User accepted group invitation';
-					// Note: the inviter's user_id has been deleted from the group_membership table before this action, so we can't record the invitation as part of this event, sadly.
-					break;
-				case 'approved':
-					$properties['Comments'] = 'Group admin approved user membership request';
-					break;
-			}
+			$properties = array( 'Joined Group ID' => $group_id );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
@@ -270,16 +276,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		public function track_leave_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
-			$group_object = groups_get_group( array( 'group_id' => $group_id ) );
-			$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
-			switch ( $reason ) {
-				case 'removed':
-					$properties['Comments'] = 'Removed by group admin';
-					break;
-				case 'banned':
-					$properties['Comments'] = 'Banned by group admin';
-					break;
-			}
+			$properties = array( 'Left Group ID' => $group_id );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
@@ -306,13 +303,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Created friendship', array( 	'Initiator ID' => $initiator_user_id,
-														'Initiator username' => $initiator->user_login,
-														'Initiator email' => $initiator->user_email,
-														'Friend ID' => $friend_user_id,
-														'Friend username' => $friend->user_login,
-														'Friend email' => $friend->user_email, )
-			);
+			KM::record( 'Created friendship', array( 'Friends with' => $friend->user_email ) );
+			KM::identify( $friend->user_email );
+			KM::record( 'Created friendship', array( 'Friends with' => $initiator->user_email  ) );
 
 		}
 		/**
@@ -325,13 +318,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $initiator->user_email );
-			KM::record( 'Canceled friendship', array( 	'Initiator ID' => $initiator_user_id,
-														'Initiator username' => $initiator->user_login,
-														'Initiator email' => $initiator->user_email,
-														'Friend ID' => $friend_user_id,
-														'Friend username' => $friend->user_login,
-														'Friend email' => $friend->user_email, )
-			);
+			KM::record( 'Canceled friendship', array( 'Canceled friendship with' => $friend->user_email ) );
 		}
 
 		/**
@@ -343,12 +330,11 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			$doc_id = $args->doc_id;
 			$user_id = get_post_meta( $doc_id, 'bp_docs_last_editor', true );
-						$friend = get_user_by( 'id', $friend_user_id );
 			$user = get_user_by( 'id', $user_id );
 
+			$properties = array();
 			if ( $group_id = bp_docs_get_associated_group_id( $doc_id ) ) {
-				$group_object = groups_get_group( array( 'group_id' => $group_id ) );
-				$properties = array( 'Group' => $group_object->name, 'Group ID' => $group_id );
+				$properties = array( 'BuddyPress Doc work in group ID' => $group_id );
 			}
 
 			if ( $args->is_new_doc ) {
@@ -359,23 +345,13 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( $event, $properties );
+			if ( ! empty( $properties ) ) {
+				KM::record( $event, $properties );
+			} else {
+				KM::record( $event );
+			}
 
 		}
-
-
-		/**
-		 * Track when a user votes in the Salud America video contest.
-		 * @param 	WP_User  $member WP_User object.
-		 */
-		public function track_sa_video_contest_vote( $user ) {
-			include_once('km.php');
-
-			KM::init( get_option( 'cc_kissmetrics_key' ) );
-			KM::identify( $user->user_email );
-			KM::record( 'Voted in Salud America video contest' );
-		}
-
 
 		/**
 		* Activity stream - Track posts and replies (separately).
@@ -387,16 +363,26 @@ if( !class_exists( 'KM_Filter' ) ) {
 			// 		&& [component] => groups is a post to a group's stream
 			// $args['type'] => activity_comment 
 			//		&& [component] => activity is a reply to an activity update in the user's stream OR in a group stream
+
+			$towrite = PHP_EOL . 'activity args: ' . print_r( $args, TRUE);
+			$fp = fopen('kiss_testing.txt', 'a');
+			fwrite($fp, $towrite);
+			fclose($fp);
 			$event = '';
+			$properties = array();
 
 			if ( $args['type'] == 'activity_update' ) {
 				if ( $args['component'] == 'activity' ) {
-					$event = 'Posted activity stream update.';
+					$event = 'Posted profile activity update.';
 				} else if ( $args['component'] == 'groups' ) {
-					$event = 'Posted group activity stream update.';
+					$event = 'Posted group activity update.';
+					if ( $args['item_id'] ) {
+						// $args['item_id'] is the group ID when component is 'groups'
+						$properties = array( 'Posted activity update in group ID' => $args['item_id']);
+					}
 				}
 			} else if ( $args['type'] == 'activity_comment' ) {
-				$event = 'Replied to activity stream update.';
+				$event = 'Replied to activity update.';
 			}
 
 			if ( $event ) {
@@ -405,7 +391,11 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 				KM::init( get_option( 'cc_kissmetrics_key' ) );
 				KM::identify( $user->user_email );
-				KM::record( $event );
+				if ( ! empty( $properties ) ) {
+					KM::record( $event, $properties );
+				} else {
+					KM::record( $event );
+				}
 			}
 		}
 		// Track when a user favorites an activity item
@@ -415,42 +405,38 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Favorited an activity stream update.' );
+			KM::record( 'Favorited an activity update.' );
 		}
 		
 		function track_comment_approval( $comment_id, $comment_status ) {
-			if ( $comment_status != 'approve' )
+			if ( $comment_status != 'approve' ) {
 				return false;
-
-			include_once('km.php');
-
-			// Get post details
-			$comment = get_comment( $comment_id );
-			// Post comment was made to
-			$post = get_post( $comment->comment_post_ID );
-
-			// Is the post a "feature"?
-			if ( 'post' == $post->post_type ) {
-				$tag_ids = wp_get_post_tags( $post->ID, array( 'fields' => 'ids' ) );
-				$featured = in_array( 858, $tag_ids) ? 'yes' : 'no';
-			} else {
-				$featured = 'no';
 			}
 
-			if ( ! $post )
-				return false;
+			// Get comment details
+			$comment = get_comment( $comment_id );
+			// Post comment was made to
+			// $post = get_post( $comment->comment_post_ID );
 
-			$author = get_user_by( 'id', $post->post_author );
+			// Is the post a "feature"?
+			// if ( 'post' == $post->post_type ) {
+			// 	$tag_ids = wp_get_post_tags( $post->ID, array( 'fields' => 'ids' ) );
+			// 	$featured = in_array( 858, $tag_ids) ? 'yes' : 'no';
+			// } else {
+			// 	$featured = 'no';
+			// }
 
+			// if ( ! $post ) {
+			// 	return false;
+			// }
+
+			$properties = array( 'Commented on post ID' => $comment->comment_post_ID );
+
+			// $author = get_user_by( 'id', $post->post_author );
+			include_once('km.php');
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $comment->comment_author_email );
-			KM::record( 'Commented on item', array( 	'Post ID' => $post->ID,
-														'Post title' => $post->post_title,
-														'Post type' => $post->post_type,
-														'Featured post' => $featured,
-														'Author email' => $author->user_email
-														 )
-			);
+			KM::record( 'Commented on a post', $properties );
 
 		}
 
@@ -462,6 +448,18 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::identify( $user->user_email );
 			KM::record( 'Submitted COGIS subgroup request form' );
 
+		}
+
+		/**
+		 * Track when a user votes in the Salud America video contest.
+		 * @param 	WP_User  $member WP_User object.
+		 */
+		public function track_sa_video_contest_vote( $user ) {
+			include_once('km.php');
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'Voted in Salud America video contest' );
 		}
 
 		// Helper functions
@@ -492,7 +490,9 @@ $origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 	// - Category archive views
 	// - Tag archive views
 	// - Custom taxonomy archive views
-add_action( 'wp_head', array( 'KM_Filter', 'output_analytics' ) );
+	// - Search terms
+	// - Clicks on "Contact" in the footer or "Still Stuck" on Support pages
+add_action( 'wp_header', array( 'KM_Filter', 'output_analytics' ) );
 add_action( 'login_head', array( 'KM_Filter', 'output_analytics' ) );
 
 if( $km_key != '' && function_exists( 'get_option' ) ) {
@@ -528,11 +528,12 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
 
+    // Track GOGIS request group form submission
+    // 17 is the form id, so this will only fire on that form's submission
+	add_action( 'gform_after_submission_17', array( 'KM_Filter', 'cogis_new_subgroup_form_submission' ), 10, 2);
+
 	// Salud America
 	// Voted on video contest
 	add_action( 'after_sa_video_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 1 );
 
-    // Track GOGIS request group form submission
-    // 17 is the form id, so this will only fire on that form's submission
-	add_action( 'gform_after_submission_17', array( 'KM_Filter', 'cogis_new_subgroup_form_submission' ), 10, 2);    
 }
