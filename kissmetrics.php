@@ -181,7 +181,22 @@ if( !class_exists( 'KM_Filter' ) ) {
 					}
 				}
 
-				?></script>
+				?>
+				jQuery(document).ready(function() {
+                <?php 
+                // Begin jQuery-based stuff
+                    // Clicks on "Contact" in the footer or "Still Stuck" on Support pages
+                	// Ticket submits have to be done another way--the ticket form is loaded in an iframe with a different domain, so we can't get data from it directly.
+                    $launched_zd = array(
+                                'record',
+                                'Opened support ticket creation dialog'
+                            );
+                    ?>jQuery('a[href^="https://ip3.zendesk.com"]').click( function(e) {
+                            _kmq.push(<?php echo json_encode( $launched_zd ); ?>);  
+                    });
+
+                });
+				</script>
 				<?php
 			}
 
@@ -364,10 +379,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 			// $args['type'] => activity_comment 
 			//		&& [component] => activity is a reply to an activity update in the user's stream OR in a group stream
 
-			$towrite = PHP_EOL . 'activity args: ' . print_r( $args, TRUE);
-			$fp = fopen('kiss_testing.txt', 'a');
-			fwrite($fp, $towrite);
-			fclose($fp);
 			$event = '';
 			$properties = array();
 
@@ -492,7 +503,7 @@ $origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 	// - Custom taxonomy archive views
 	// - Search terms
 	// - Clicks on "Contact" in the footer or "Still Stuck" on Support pages
-add_action( 'wp_header', array( 'KM_Filter', 'output_analytics' ) );
+add_action( 'wp_footer', array( 'KM_Filter', 'output_analytics' ) );
 add_action( 'login_head', array( 'KM_Filter', 'output_analytics' ) );
 
 if( $km_key != '' && function_exists( 'get_option' ) ) {
