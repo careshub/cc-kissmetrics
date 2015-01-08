@@ -398,7 +398,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 						$properties = array( 'Posted activity update in group ID' => $args['item_id']);
 					}
 				}
-			} else if ( $args['type'] == 'activity_comment' ) {
+			} else if ( $args['type'] == 'activity_comment' && ( in_array( $args['component'], array( 'activity', 'groups' ) ) ) ) {
 				$event = 'Replied to activity update.';
 			}
 
@@ -414,6 +414,11 @@ if( !class_exists( 'KM_Filter' ) ) {
 					KM::record( $event );
 				}
 			}
+
+			$towrite = PHP_EOL . print_r($args, TRUE);
+			$fp = fopen('activity_args.txt', 'a');
+			fwrite($fp, $towrite);
+			fclose($fp);
 		}
 		// Track when a user favorites an activity item
 		public function track_activity_stream_favorite( $activity_id, $user_id ) {
@@ -504,6 +509,8 @@ $origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 // Output analytics to all pages and the login page
 	// Page-view listeners
 	// - Clicks on Grant Support: http://www.communitycommons.org/chi-planning/
+	// - Site front page views
+	// - Blog page views
 	// - Category archive views
 	// - Tag archive views
 	// - Custom taxonomy archive views
