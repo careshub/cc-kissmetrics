@@ -46,13 +46,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 			    }, 1);
 			  }
 			  _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/' + _kmk + '.1.js');
-			  _kmq.push(function() {
-			    if(document.getElementsByTagName('body')[0].className.match('home')) {
-			    	_kmq.push(['record', 'Viewed Blog Homepage']);
-			    }
-			  });
-
-			<?php
+			 <?php
 				// Identify authenticated users
 				if( is_user_logged_in() ) {
 					global $current_user;
@@ -115,6 +109,18 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['trackClick', '.access-target-intervention-area-tool', 'Clicked Target Area Intervention Tool']);
 					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
+				}
+
+				// Front page views
+				if ( is_front_page() ) {
+					?>_kmq.push(['record', 'Viewed Site Front Page']);
+					<?php
+				}
+
+				// Blog page views
+				if ( is_home() ) {
+					?>_kmq.push(['record', 'Viewed Blog Homepage']);
+					<?php
 				}
 
 				// Taxonomy pages
