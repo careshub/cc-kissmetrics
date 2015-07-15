@@ -343,24 +343,33 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		/**
 		* BuddyPress Docs - Track creation and editing of docs.
+		*
+		* @param object $args BP_Docs_Query object at time of doc save.
 		*/
 		public function track_new_bp_doc( $args ) {
 
 			include_once('km.php');
 
-			$doc_id = $args->doc_id;
+			$doc_id  = $args->doc_id;
 			$user_id = get_post_meta( $doc_id, 'bp_docs_last_editor', true );
-			$user = get_user_by( 'id', $user_id );
+			$user    = get_user_by( 'id', $user_id );
 
 			$properties = array();
 			if ( $group_id = bp_docs_get_associated_group_id( $doc_id ) ) {
-				$properties = array( 'BuddyPress Doc work in group ID' => $group_id );
+				$properties['BuddyPress Doc work in group ID'] = $group_id;
 			}
 
 			if ( $args->is_new_doc ) {
-				$event = "Created new BuddyPress Doc.";
+				$event = 'Created new BuddyPress Doc.';
 			} else {
-				$event = "Edited BuddyPress Doc.";
+				$event = 'Edited BuddyPress Doc.';
+				// If the current editor isn't the doc's creator, we want to
+				// track that relationship.
+				$doc = get_post( $doc_id );
+				if ( $doc->post_author != $user_id ) {
+					$author = get_user_by( 'id', $doc->post_author );
+					$properties['Collaborated on BP Doc with creator.'] = $author->user_email;
+				}
 			}
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
@@ -370,7 +379,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 			} else {
 				KM::record( $event );
 			}
-
 		}
 
 		/**
