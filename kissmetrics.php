@@ -181,7 +181,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 								'Site search terms' => $search_terms,
 							)
 						);
-
 						?>_kmq.push(<?php echo json_encode( $search_record ); ?>);
 						<?php
 					}
@@ -189,7 +188,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 				?>
 				jQuery(document).ready(function() {
-                <?php 
+                <?php
                 // Begin jQuery-based stuff
                     // Clicks on "Contact" in the footer or "Still Stuck" on Support pages
                 	// Ticket submits have to be done another way--the ticket form is loaded in an iframe with a different domain, so we can't get data from it directly.
@@ -198,7 +197,7 @@ if( !class_exists( 'KM_Filter' ) ) {
                                 'Opened support ticket creation dialog'
                             );
                     ?>jQuery('a[href^="https://ip3.zendesk.com"]').click( function(e) {
-                            _kmq.push(<?php echo json_encode( $launched_zd ); ?>);  
+                            _kmq.push(<?php echo json_encode( $launched_zd ); ?>);
                     });
 
                 });
@@ -379,10 +378,10 @@ if( !class_exists( 'KM_Filter' ) ) {
 		*/
 		public function track_activity_stream_posts( $args ) {
 			// We only care about some activity types
-			// $args['type'] => activity_update 
+			// $args['type'] => activity_update
 			//		&& [component] => activity is a post to the user's stream
 			// 		&& [component] => groups is a post to a group's stream
-			// $args['type'] => activity_comment 
+			// $args['type'] => activity_comment
 			//		&& [component] => activity is a reply to an activity update in the user's stream OR in a group stream
 
 			$event = '';
@@ -429,7 +428,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::identify( $user->user_email );
 			KM::record( 'Favorited an activity update.' );
 		}
-		
+
 		function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' ) {
 				return false;
