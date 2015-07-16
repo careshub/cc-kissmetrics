@@ -510,6 +510,61 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( 'Voted in Salud America video contest' );
 		}
 
+		/**
+		 * Record event for publication of a hub narrative.
+		 *
+		 * Run on transition_post_status, to catch publication from all locations.
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string $new_status
+		 * @param string $old_status
+		 * @param obj WP_Post object
+		 */
+		public function track_hub_narrative_publish( $new_status, $old_status, $post ) {
+
+			// Only work on group_narrative post types
+			if ( 'group_story' != $post->post_type ) {
+				return;
+			}
+
+			// Fire only when a story is published.
+			if ( ! ( $new_status == 'publish' && $old_status != 'publish' ) ) {
+				return;
+			}
+
+			// Properties: post_title, group published to
+			$properties = array(
+				'Posted hub narrative with title' => $post->post_title,
+				);
+
+			$origin_group_id = 0;
+			if ( function_exists('ccgn_get_origin_group') ) {
+				$origin_group_id = ccgn_get_origin_group( $post->ID );
+				$properties['Posted hub narrative in hub'] = $origin_group_id;
+			}
+
+			$author = get_user_by( 'id', $post->post_author );
+
+			include_once('km.php');
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $author->user_email );
+			KM::record( 'Posted hub narrative', $properties );
+
+			// Record which hubs the post was syndicated to.
+			// (Don't double-count the origin group.)
+			// I think this has to be a foreach to set the same property multiple times.
+			if ( function_exists('ccgn_get_associated_group_ids') ) {
+				$associated_groups = ccgn_get_associated_group_ids( $post->ID );
+				$syndicated_groups = array_diff( $associated_groups, (array) $origin_group_id );
+				if ( ! empty( $syndicated_groups ) ) {
+					foreach ( $syndicated_groups as $syn_group_id ) {
+						KM::set( array( 'Syndicated hub narrative to hub' => $syn_group_id ) );
+					}
+				}
+			}
+		}
+
 		// Helper functions
 		// If the user is not logged in, you can use this function to get the best value from KISS's cookies
 		// From within this class, use $identity = self::read_js_identity()
@@ -585,5 +640,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Salud America
 	// Voted on video contest
 	add_action( 'after_sa_video_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 1 );
+
+	// Hub Narratives
+	add_action( 'transition_post_status', array( 'KM_Filter', 'track_hub_narrative_publish' ), 10, 3 );
+
 
 }
