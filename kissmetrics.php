@@ -202,11 +202,25 @@ if( !class_exists( 'KM_Filter' ) ) {
 								'record',
 								'Viewed Post',
 								array(
-									'Post title' => get_the_title( $post_id ),
+									'Viewed post title' => get_the_title( $post_id ),
 								)
 							);
 							?>_kmq.push(<?php echo json_encode( $post_event ); ?>);
 							<?php
+							// Record categories of interest.
+							$categories = wp_get_object_terms( $post_id, 'category', array( 'fields' => 'names' ) );
+							if ( ! empty ( $categories ) ) {
+								foreach ( $categories as $cat_name) {
+									$category_prop = array(
+										'set',
+										array(
+											'Viewed post in category' => $cat_name,
+										)
+									);
+									?>_kmq.push(<?php echo json_encode( $category_prop ); ?>);
+									<?php
+								}
+							}
 						}
 					}
 				}
