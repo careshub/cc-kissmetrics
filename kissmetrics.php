@@ -186,6 +186,25 @@ if( !class_exists( 'KM_Filter' ) ) {
 					}
 				}
 
+				// Viewing a Commons blog post.
+				if ( is_single() ) {
+					if ( $post_id = get_the_ID() ) {
+						// We're only interested in the posts written by IP3
+						// staff for the Commons blog.
+						if ( 'post' == get_post_type( $post_id ) ) {
+							$post_event = array(
+								'record',
+								'Viewed Post',
+								array(
+									'Post title' => get_the_title( $post_id ),
+								)
+							);
+							?>_kmq.push(<?php echo json_encode( $post_event ); ?>);
+							<?php
+						}
+					}
+				}
+
 				?>
 				jQuery(document).ready(function() {
                 <?php
