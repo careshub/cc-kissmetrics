@@ -5,9 +5,12 @@
 /*
 Plugin Name: CC KISSmetrics
 Description: A Community Commons-specific implementation of KISS Metrics.
-Version: 0.1
+Version: 1.1.0
 Author: James Cutts, Mike Barbaro, Dave Cavins
 Author URI: http://www.communitycommons.org
+
+Version History:
+1.1.0 - July 2015
 */
 
 define('CC_KISSMETRICS_VERSION', '0.1');
@@ -186,7 +189,10 @@ if( !class_exists( 'KM_Filter' ) ) {
 					}
 				}
 
-				// Viewing a Commons blog post.
+				/**
+				* Viewing a Commons blog post.
+				* @since 1.1.0
+				*/
 				if ( is_single() ) {
 					if ( $post_id = get_the_ID() ) {
 						// We're only interested in the posts written by IP3
@@ -362,6 +368,8 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		/**
 		* BuddyPress Docs - Track creation and editing of docs.
+		*
+		* 'Collaborated on BP Doc with creator.' property added in 1.1.0.
 		*
 		* @param object $args BP_Docs_Query object at time of doc save.
 		*/
