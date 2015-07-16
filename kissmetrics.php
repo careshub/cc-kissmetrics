@@ -523,7 +523,7 @@ $origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 	// - Custom taxonomy archive views
 	// - Search terms
 	// - Clicks on "Contact" in the footer or "Still Stuck" on Support pages
-add_action( 'wp_footer', array( 'KM_Filter', 'output_analytics' ) );
+add_action( 'wp_head', array( 'KM_Filter', 'output_analytics' ) );
 add_action( 'login_head', array( 'KM_Filter', 'output_analytics' ) );
 
 if( $km_key != '' && function_exists( 'get_option' ) ) {
