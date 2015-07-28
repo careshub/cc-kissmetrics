@@ -253,7 +253,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * @param string $uri The URI/host string.
 		 * @return object The associative array with two keys: "domain" (e.g., google.com) and "host" (e.g., mail.google.com)
 		 */
-		function get_domain( $uri ) {
+		public static function get_domain( $uri ) {
 			$parsed_uri = parse_url( $uri );
 			if( isset( $parsed_uri['host'] ) )
 				$host = $parsed_uri['host'];
@@ -605,9 +605,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 if( function_exists( 'get_option' ) ) {
 	$km_key = get_option( 'cc_kissmetrics_key' );
 }
-
-// Current site domain and host
-$origin = KM_Filter::get_domain( $_SERVER['HTTP_HOST'] );
 
 // Output analytics to all pages and the login page
 	// Page-view listeners
