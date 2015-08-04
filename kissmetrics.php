@@ -34,7 +34,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Outputs the KISSmetrics analytics script block.
 		 */
-		function output_analytics() {
+		public static function output_analytics() {
 			global $km_key;
 
 			// As long as the API key is set, output the analytics. Also add code to catch if the user is viewing the homepage.
@@ -275,7 +275,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user registers (BP-safe).
 		 */
-		public function track_registration_bp( $user_id ) {
+		public static function track_registration_bp( $user_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 
@@ -287,7 +287,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user leaves the site.
 		 */
-		public function track_user_account_delete( $user_id ) {
+		public static function track_user_account_delete( $user_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 
@@ -298,7 +298,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user logs in.
 		 */
-		public function track_cc_login( $user_login, $user ) {
+		public static function track_cc_login( $user_login, $user ) {
 		    include_once('km.php');
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
@@ -309,7 +309,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user joins a group.
 		 */
-		public function track_join_bp_group( $group_id, $user_id, $reason = null ) {
+		public static function track_join_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			$properties = array( 'Joined Group ID' => $group_id );
@@ -319,12 +319,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( 'Joined group', $properties );
 		}
 		//User accepts invitation
-		public function track_accept_group_invite( $user_id, $group_id ) {
+		public static function track_accept_group_invite( $user_id, $group_id ) {
 			// Use basic join function to record activity
 			self::track_join_bp_group( $group_id, $user_id, 'accepted' );
 		}
 		//User membership request is approved
-		public function track_group_membership_request_approval( $user_id, $group_id ) {
+		public static function track_group_membership_request_approval( $user_id, $group_id ) {
 			// Use basic join function to record activity
 			self::track_join_bp_group( $group_id, $user_id, 'approved' );
 		}
@@ -332,7 +332,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a user leaves a group.
 		 */
-		public function track_leave_bp_group( $group_id, $user_id, $reason = null ) {
+		public static function track_leave_bp_group( $group_id, $user_id, $reason = null ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			$properties = array( 'Left Group ID' => $group_id );
@@ -342,12 +342,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::record( 'Left group', $properties );
 		}
 		//User is removed by group admin
-		public function track_removed_bp_group( $group_id, $user_id  ) {
+		public static function track_removed_bp_group( $group_id, $user_id  ) {
 			// Use basic leave function to record activity
 			self::track_leave_bp_group( $group_id, $user_id, 'removed' );
 		}
 		//User is banned by group admin
-		public function track_banned_bp_group( $group_id, $user_id  ) {
+		public static function track_banned_bp_group( $group_id, $user_id  ) {
 			// Use basic leave function to record activity
 			self::track_leave_bp_group( $group_id, $user_id, 'banned' );
 		}
@@ -355,7 +355,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a friendship is created.
 		 */
-		public function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+		public static function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
 			include_once('km.php');
 			$initiator = get_user_by( 'id', $initiator_user_id );
 			$friend = get_user_by( 'id', $friend_user_id );
@@ -370,7 +370,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		 * Track when a friendship is canceled.
 		 */
-		public function track_cancel_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
+		public static function track_cancel_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
 			include_once('km.php');
 			$initiator = get_user_by( 'id', $initiator_user_id );
 			$friend = get_user_by( 'id', $friend_user_id );
@@ -387,7 +387,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		*
 		* @param object $args BP_Docs_Query object at time of doc save.
 		*/
-		public function track_new_bp_doc( $args ) {
+		public static function track_new_bp_doc( $args ) {
 
 			include_once('km.php');
 
@@ -425,7 +425,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		/**
 		* Activity stream - Track posts and replies (separately).
 		*/
-		public function track_activity_stream_posts( $args ) {
+		public static function track_activity_stream_posts( $args ) {
 			// We only care about some activity types
 			// $args['type'] => activity_update
 			//		&& [component] => activity is a post to the user's stream
@@ -491,7 +491,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		}
 		
 		// Track when a user favorites an activity item
-		public function track_activity_stream_favorite( $activity_id, $user_id ) {
+		public static function track_activity_stream_favorite( $activity_id, $user_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			
@@ -520,7 +520,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		}
 
-		function track_comment_approval( $comment_id, $comment_status ) {
+		public static function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' ) {
 				return false;
 			}
@@ -552,7 +552,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		}
 
-		function cogis_new_subgroup_form_submission( $entry, $form ){
+		public static function cogis_new_subgroup_form_submission( $entry, $form ){
 			include_once('km.php');
 			$user = wp_get_current_user();
 
@@ -566,7 +566,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Track when a user votes in the Salud America video contest.
 		 * @param 	WP_User  $member WP_User object.
 		 */
-		public function track_sa_video_contest_vote( $user ) {
+		public static function track_sa_video_contest_vote( $user ) {
 			include_once('km.php');
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
@@ -585,7 +585,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * @param string $old_status
 		 * @param obj WP_Post object
 		 */
-		public function track_hub_narrative_publish( $new_status, $old_status, $post ) {
+		public static function track_hub_narrative_publish( $new_status, $old_status, $post ) {
 
 			// Only work on group_narrative post types
 			if ( 'group_story' != $post->post_type ) {
