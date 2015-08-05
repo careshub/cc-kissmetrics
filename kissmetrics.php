@@ -448,6 +448,27 @@ if( !class_exists( 'KM_Filter' ) ) {
 				}
 			} else if ( $args['type'] == 'activity_comment' && ( in_array( $args['component'], array( 'activity', 'groups' ) ) ) ) {
 				$event = 'Replied to activity update.';
+				
+				//original activity post is $args['item_id'].  Replied to post or comment is [secondary_item_id]
+				//get activity data, just this activity
+				$acts = bp_activity_get_specific( 
+					array(
+						'activity_ids'      => $args['item_id'],
+						'max'               => 1
+					)
+				);
+				
+				$current_act_author = $acts['activities']['0']->user_id;
+				$user_info = get_userdata( $current_act_author );
+				$useremail = $user_info->user_email;
+				
+				//send KISS org post author
+				$properties = array( 'Original activity author: ' => $useremail );
+				
+				unset( $current_act_author );
+				unset( $act );
+				unset( $user_info );
+				unset( $useremail );
 			}
 
 			if ( $event ) {
@@ -468,14 +489,35 @@ if( !class_exists( 'KM_Filter' ) ) {
 			fwrite($fp, $towrite);
 			fclose($fp);
 		}
+		
 		// Track when a user favorites an activity item
 		public function track_activity_stream_favorite( $activity_id, $user_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
-
+			
+			//get activity data, just this activity
+			$acts = bp_activity_get_specific( 
+				array(
+					'activity_ids'      => $activity_id,
+					'max'               => 1
+				)
+			);
+			
+			$current_act_author = $acts['activities']['0']->user_id;
+			$user_info = get_userdata( $current_act_author );
+			$useremail = $user_info->user_email;
+			
+			$properties = array( 'Original activity author: ' => $useremail );
+			
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Favorited an activity update.' );
+			KM::record( 'Favorited an activity update.', $properties );
+			
+			unset( $current_act_author );
+			unset( $act );
+			unset( $user_info );
+			unset( $useremail );
+
 		}
 
 		function track_comment_approval( $comment_id, $comment_status ) {
