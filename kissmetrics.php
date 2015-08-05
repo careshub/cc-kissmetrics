@@ -238,7 +238,20 @@ if( !class_exists( 'KM_Filter' ) ) {
                     ?>jQuery('a[href^="https://ip3.zendesk.com"]').click( function(e) {
                             _kmq.push(<?php echo json_encode( $launched_zd ); ?>);
                     });
-
+                    <?php
+                    // Track clicks on the various "share" buttons.
+                    ?>
+                    jQuery('.bpsi > a').click( function(e) {
+                            _kmq.push([
+                            	'record',
+                            	'Shared item',
+                            	{
+                            		'Shared item of type': jQuery( this ).data( 'shared-item' ),
+                            		'Shared item with name': jQuery( this ).data( 'shared-title' ),
+                            		'Shared item to': jQuery( this ).data( 'shared-to' )
+                            	}
+                            	]);
+                    });
                 });
 				</script>
 				<?php
