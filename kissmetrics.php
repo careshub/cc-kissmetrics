@@ -587,6 +587,118 @@ if( !class_exists( 'KM_Filter' ) ) {
 			}
 		}
 
+		/**
+		 * Track new topic creation. (bbPress)
+		 *
+		 * @param int $topic_id ID of the original topic
+		 * @param int $forum_id ID of the parent forum of this topic
+		 * @param array $anonymous_data Data that applies when the topic is produced by a non-member.
+		 * @param int $topic_author ID of the reply author
+		 *
+		 */
+		public static function track_bbpress_topic_creation( $topic_id, $forum_id, $anonymous_data, $topic_author ){
+			// Who started this topic?
+			$topic_author_info = get_userdata( $topic_author );
+
+			// What forum is this happening in?
+			$forum_title = bbp_get_forum_title( $forum_id );
+
+			$properties = array( 'Contributed to topic in forum' => $forum_title );
+
+			include_once('km.php');
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $topic_author_info->user_email );
+			KM::record( 'Created new forum topic', $properties );
+		}
+
+		/**
+		 * Track replies to forum topics. (bbPress)
+		 *
+		 * @param int $reply_id ID of the reply post
+		 * @param int $topic_id ID of the original topic
+		 * @param int $forum_id ID of the parent forum of this topic
+		 * @param array $anonymous_data Data that applies when the topic is produced by a non-member
+		 * @param int $reply_author ID of the reply author
+		 * @param bool $unused A deprecated filter param.
+		 * @param int $reply_to If this reply was made in reply to another reply, this is that other ID.
+		 *
+		 */
+		public static function track_bbpress_topic_replies( $reply_id, $topic_id, $forum_id, $anonymous_data, $reply_author, $unused, $reply_to ) {
+			// Who wrote this reply?
+			$reply_author = get_userdata( $reply_author );
+
+			// Who started this topic?
+			$topic_author_id = get_post_field( 'post_author', $topic_id );
+			$topic_author = get_userdata( $topic_author_id );
+
+			// What forum is this happening in?
+			$forum_title = bbp_get_forum_title( $forum_id );
+
+			$properties = array(
+				'Contributed to topic in forum' => $forum_title,
+				'Replied to topic started by'   => $topic_author->user_email,
+				 );
+
+			if ( ! empty( $reply_to ) ) {
+				// This reply was made in reply to another reply in the same topic
+				// which should counts as an interaction between members.
+				$in_reply_to_author_id = get_post_field( 'post_author', $reply_to );
+				$in_reply_to_author = get_userdata( $in_reply_to_author_id );
+
+				$properties['Replied to a reply by'] = $in_reply_to_author->user_email;
+			}
+
+			include_once('km.php');
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $reply_author->user_email );
+			KM::record( 'Replied to forum topic', $properties );
+		}
+
+		/**
+		 * Track subscriptions to topics and forums. (bbPress)
+		 *
+		 * @param int $user_id
+		 * @param int $object_id ID of the topic or forum
+		 * @param int $post_type 'forum' or 'topic'
+		 *
+		 */
+		public static function track_bbpress_object_subscription( $user_id, $object_id, $post_type ) {
+			// Who did it?
+			$subscriber = get_userdata( $user_id );
+
+			// If a topic, we want to note who started it.
+			if ( 'topic' == $post_type ) {
+				// Who started this topic?
+				$topic_author_id = get_post_field( 'post_author', $object_id );
+				$topic_author = get_userdata( $topic_author_id );
+
+				// What forum is this happening in?
+				$forum_id = bbp_get_topic_forum_id( $object_id );
+				$forum_title = bbp_get_forum_title( $forum_id );
+
+				$event = 'Subscribed to forum topic';
+				$properties = array(
+					'​Subscribed to topic started by' => $topic_author->user_email,
+					'​Subscribed to topic in forum'   => $forum_title
+				 );
+			} elseif ( 'forum' == $post_type ) {
+				// What forum is this happening in?
+				$forum_title = bbp_get_forum_title( $object_id );
+
+				$event = 'Subscribed to forum';
+				$properties = array(
+					'​Subscribed to forum' => $forum_title
+				);
+			}
+
+			if ( ! empty( $event ) ) {
+				include_once('km.php');
+				KM::init( get_option( 'cc_kissmetrics_key' ) );
+				KM::identify( $subscriber->user_email );
+				KM::record( $event, $properties );
+			}
+		}
+
 		// Helper functions
 		// If the user is not logged in, you can use this function to get the best value from KISS's cookies
 		// From within this class, use $identity = self::read_js_identity()
@@ -663,5 +775,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Hub Narratives
 	add_action( 'transition_post_status', array( 'KM_Filter', 'track_hub_narrative_publish' ), 10, 3 );
 
+	// Forums (bbPress)
+	add_action( 'bbp_new_topic', array( 'KM_Filter', 'track_bbpress_topic_creation' ), 18, 4 );
+	add_action( 'bbp_new_reply', array( 'KM_Filter', 'track_bbpress_topic_replies' ), 18, 7 );
+	add_action( 'bbp_add_user_subscription', array( 'KM_Filter', 'track_bbpress_object_subscription' ), 18, 3 );
 
 }
