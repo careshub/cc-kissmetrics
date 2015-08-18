@@ -116,44 +116,44 @@ if( !class_exists( 'KM_Filter' ) ) {
 				
 				//Community Health Improvement Journey - http://www.communitycommons.org/groups/chi/chi-journey/
 				if( is_page( 47056 ) ) {
-					?>_kmq.push(['trackClick', 'checkin-evaluate-i', 'Clicked Check-In & Evaluate I']);
-					_kmq.push(['trackClick', 'work-together', 'Clicked Work Together']);
-					_kmq.push(['trackClick', 'sustain-improvement', 'Clicked Sustain Improvement']);
-					_kmq.push(['trackClick', 'prioritize-vulnerability', 'Clicked Prioritize Vulnerability']);
+					?>_kmq.push(['trackClick', 'checkin-evaluate-i', 'CHI: Clicked Check-In & Evaluate I']);
+					_kmq.push(['trackClick', 'work-together', 'CHI: Clicked Work Together']);
+					_kmq.push(['trackClick', 'sustain-improvement', 'CHI: Clicked Sustain Improvement']);
+					_kmq.push(['trackClick', 'prioritize-vulnerability', 'CHI: Clicked Prioritize Vulnerability']);
 					
-					_kmq.push(['trackClick', 'checkin-evaluate-ii', 'Clicked Check-In & Evaluate II']);
-					_kmq.push(['trackClick', 'community-context', 'Clicked Community Context']);
-					_kmq.push(['trackClick', 'health-equity', 'Clicked Health Equity']);
-					_kmq.push(['trackClick', 'chna-reporting-tool', 'Clicked CHNA Reporting Tool']);
+					_kmq.push(['trackClick', 'checkin-evaluate-ii', 'CHI: Clicked Check-In & Evaluate II']);
+					_kmq.push(['trackClick', 'community-context', 'CHI: Clicked Community Context']);
+					_kmq.push(['trackClick', 'health-equity', 'CHI: Clicked Health Equity']);
+					_kmq.push(['trackClick', 'chna-reporting-tool', 'CHI: Clicked CHNA Reporting Tool']);
 					
-					_kmq.push(['trackClick', 'checkin-evaluate-iii', 'Clicked Check-In & Evaluate III']);
-					_kmq.push(['trackClick', 'data-informed-decisions', 'Clicked Data-Informed Decisions']);
-					_kmq.push(['trackClick', 'community-engagement', 'Clicked Community Engagement']);
-					_kmq.push(['trackClick', 'identifying-priorities', 'Clicked Identifying Priorities']);
+					_kmq.push(['trackClick', 'checkin-evaluate-iii', 'CHI: Clicked Check-In & Evaluate III']);
+					_kmq.push(['trackClick', 'data-informed-decisions', 'CHI: Clicked Data-Informed Decisions']);
+					_kmq.push(['trackClick', 'community-engagement', 'CHI: Clicked Community Engagement']);
+					_kmq.push(['trackClick', 'identifying-priorities', 'CHI: Clicked Identifying Priorities']);
 					
-					_kmq.push(['trackClick', 'checkin-evaluate-iv', 'Clicked Check-In & Evaluate IV']);
-					_kmq.push(['trackClick', 'selecting-interventions', 'Clicked Selecting Interventions']);
-					_kmq.push(['trackClick', 'effective-interventions', 'Clicked Effective Interventions']);
-					_kmq.push(['trackClick', 'case-studies-work-plans', 'Clicked Case Studies & Work Plans']);
+					_kmq.push(['trackClick', 'checkin-evaluate-iv', 'CHI: Clicked Check-In & Evaluate IV']);
+					_kmq.push(['trackClick', 'selecting-interventions', 'CHI: Clicked Selecting Interventions']);
+					_kmq.push(['trackClick', 'effective-interventions', 'CHI: Clicked Effective Interventions']);
+					_kmq.push(['trackClick', 'case-studies-work-plans', 'CHI: Clicked Case Studies & Work Plans']);
 					
-					_kmq.push(['trackClick', 'checkin-evaluate-v', 'Clicked Check-In & Evaluate V']);
-					_kmq.push(['trackClick', 'create-an-action-plan', 'Clicked Creating an Action Plan']);
-					_kmq.push(['trackClick', 'activate-act-together', 'Clicked Activate & Act Together']);
-					_kmq.push(['trackClick', 'case-studies-resources', 'Clicked Case Studies & Resources']);
+					_kmq.push(['trackClick', 'checkin-evaluate-v', 'CHI: Clicked Check-In & Evaluate V']);
+					_kmq.push(['trackClick', 'create-an-action-plan', 'CHI: Clicked Creating an Action Plan']);
+					_kmq.push(['trackClick', 'activate-act-together', 'CHI: Clicked Activate & Act Together']);
+					_kmq.push(['trackClick', 'case-studies-resources', 'CHI: Clicked Case Studies & Resources']);
 					
-					_kmq.push(['trackClick', 'summarize-evaluate', 'Clicked Summarize & Evaluate']);
-					_kmq.push(['trackClick', 'monitoring-evaluation', 'Clicked Monitoring & Evaluation']);
-					_kmq.push(['trackClick', 'case-study-resources', 'Clicked Case Study & Resources']);
-					_kmq.push(['trackClick', 'designing-implementing-evaluation', 'Clicked Designing & Implementing Your Evaluation']);					
+					_kmq.push(['trackClick', 'summarize-evaluate', 'CHI: Clicked Summarize & Evaluate']);
+					_kmq.push(['trackClick', 'monitoring-evaluation', 'CHI: Clicked Monitoring & Evaluation']);
+					_kmq.push(['trackClick', 'case-study-resources', 'CHI: Clicked Case Study & Resources']);
+					_kmq.push(['trackClick', 'designing-implementing-evaluation', 'CHI: Clicked Designing & Implementing Your Evaluation']);					
 				<?php
 				}	
 
 				// Health Equity: http://www.communitycommons.org/health-equity/
 				if( is_page( 41702 ) ) {
-					?>_kmq.push(['trackClick', '_cc-mapwidget0', 'Clicked Housing: Public Housing and Housing Costs Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget1', 'Clicked Transportation: Average Commute Time Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget2', 'Clicked Food: Retail Food Environment Score Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget3', 'Clicked Culture: Linguistically Isolated Population Map']);
+					?>_kmq.push(['trackClick', '_cc-mapwidget0', 'CHI Health Equity: Clicked Housing Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget1', 'CHI Health Equity: Clicked Transportation Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget2', 'CHI Health Equity: Clicked Food Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget3', 'CHI Health Equity: Clicked Culture Map']);
 				<?php
 				}
 
