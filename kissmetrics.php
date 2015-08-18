@@ -113,6 +113,49 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
 				}
+				
+				//Community Health Improvement Journey - http://www.communitycommons.org/groups/chi/chi-journey/
+				if( is_page( 47056 ) ) {
+					?>_kmq.push(['trackClick', '#checkin-evaluate-i', 'Clicked Check-In & Evaluate I']);
+					_kmq.push(['trackClick', '#work-together', 'Clicked Work Together']);
+					_kmq.push(['trackClick', '#sustain-improvement', 'Clicked Sustain Improvement']);
+					_kmq.push(['trackClick', '#prioritize-vulnerability', 'Clicked Prioritize Vulnerability']);
+					
+					_kmq.push(['trackClick', '#checkin-evaluate-ii', 'Clicked Check-In & Evaluate II']);
+					_kmq.push(['trackClick', '#community-context', 'Clicked Community Context']);
+					_kmq.push(['trackClick', '#health-equity', 'Clicked Health Equity']);
+					_kmq.push(['trackClick', '#chna-reporting-tool', 'Clicked CHNA Reporting Tool']);
+					
+					_kmq.push(['trackClick', '#checkin-evaluate-iii', 'Clicked Check-In & Evaluate III']);
+					_kmq.push(['trackClick', '#data-informed-decisions', 'Clicked Data-Informed Decisions']);
+					_kmq.push(['trackClick', '#community-engagement', 'Clicked Community Engagement']);
+					_kmq.push(['trackClick', '#identifying-priorities', 'Clicked Identifying Priorities']);
+					
+					_kmq.push(['trackClick', '#checkin-evaluate-iv', 'Clicked Check-In & Evaluate IV']);
+					_kmq.push(['trackClick', '#selecting-interventions', 'Clicked Selecting Interventions']);
+					_kmq.push(['trackClick', '#effective-interventions', 'Clicked Effective Interventions']);
+					_kmq.push(['trackClick', '#case-studies-work-plans', 'Clicked Case Studies & Work Plans']);
+					
+					_kmq.push(['trackClick', '#checkin-evaluate-v', 'Clicked Check-In & Evaluate V']);
+					_kmq.push(['trackClick', '#create-an-action-plan', 'Clicked Creating an Action Plan']);
+					_kmq.push(['trackClick', '#activate-act-together', 'Clicked Activate & Act Together']);
+					_kmq.push(['trackClick', '#case-studies-resources', 'Clicked Case Studies & Resources']);
+					
+					_kmq.push(['trackClick', '#summarize-evaluate', 'Clicked Summarize & Evaluate']);
+					_kmq.push(['trackClick', '#monitoring-evaluation', 'Clicked Monitoring & Evaluation']);
+					_kmq.push(['trackClick', '#case-study-resources', 'Clicked Case Study & Resources']);
+					_kmq.push(['trackClick', '#designing-implementing-evaluation', 'Clicked Designing & Implementing Your Evaluation']);					
+				<?php
+				}	
+
+				// Health Equity: http://www.communitycommons.org/health-equity/
+				if( is_page( 41702 ) ) {
+					?>_kmq.push(['trackClick', '#_cc-mapwidget0', 'Clicked Housing: Public Housing and Housing Costs Map']);
+					_kmq.push(['trackClick', '#_cc-mapwidget1', 'Clicked Transportation: Average Commute Time Map']);
+					_kmq.push(['trackClick', '#_cc-mapwidget2', 'Clicked Food: Retail Food Environment Score Map']);
+					_kmq.push(['trackClick', '#_cc-mapwidget3', 'Clicked Culture: Linguistically Isolated Population Map']);
+				<?php
+				}
 
 				// Front page views
 				if ( is_front_page() ) {
