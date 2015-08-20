@@ -113,40 +113,52 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
 				}
-				
+
 				//Community Health Improvement Journey - http://www.communitycommons.org/groups/chi/chi-journey/
-				if( is_page( 47056 ) ) {
-					?>_kmq.push(['trackClick', 'checkin-evaluate-i', 'CHI: Clicked Check-In & Evaluate I']);
+				// CHI is group id 36
+				if( 36 == bp_get_current_group_id() && bp_is_current_action( 'chi-journey' )  ) {
+					?>_kmq.push(['record', 'CHI: Visited CHI Journey Tab']);
+					_kmq.push(['trackClick', 'checkin-evaluate-i', 'CHI: Clicked Check-In & Evaluate I']);
 					_kmq.push(['trackClick', 'work-together', 'CHI: Clicked Work Together']);
 					_kmq.push(['trackClick', 'sustain-improvement', 'CHI: Clicked Sustain Improvement']);
 					_kmq.push(['trackClick', 'prioritize-vulnerability', 'CHI: Clicked Prioritize Vulnerability']);
-					
+
 					_kmq.push(['trackClick', 'checkin-evaluate-ii', 'CHI: Clicked Check-In & Evaluate II']);
 					_kmq.push(['trackClick', 'community-context', 'CHI: Clicked Community Context']);
 					_kmq.push(['trackClick', 'health-equity', 'CHI: Clicked Health Equity']);
 					_kmq.push(['trackClick', 'chna-reporting-tool', 'CHI: Clicked CHNA Reporting Tool']);
-					
+
 					_kmq.push(['trackClick', 'checkin-evaluate-iii', 'CHI: Clicked Check-In & Evaluate III']);
 					_kmq.push(['trackClick', 'data-informed-decisions', 'CHI: Clicked Data-Informed Decisions']);
 					_kmq.push(['trackClick', 'community-engagement', 'CHI: Clicked Community Engagement']);
 					_kmq.push(['trackClick', 'identifying-priorities', 'CHI: Clicked Identifying Priorities']);
-					
+
 					_kmq.push(['trackClick', 'checkin-evaluate-iv', 'CHI: Clicked Check-In & Evaluate IV']);
 					_kmq.push(['trackClick', 'selecting-interventions', 'CHI: Clicked Selecting Interventions']);
 					_kmq.push(['trackClick', 'effective-interventions', 'CHI: Clicked Effective Interventions']);
 					_kmq.push(['trackClick', 'case-studies-work-plans', 'CHI: Clicked Case Studies & Work Plans']);
-					
+
 					_kmq.push(['trackClick', 'checkin-evaluate-v', 'CHI: Clicked Check-In & Evaluate V']);
 					_kmq.push(['trackClick', 'create-an-action-plan', 'CHI: Clicked Creating an Action Plan']);
 					_kmq.push(['trackClick', 'activate-act-together', 'CHI: Clicked Activate & Act Together']);
 					_kmq.push(['trackClick', 'case-studies-resources', 'CHI: Clicked Case Studies & Resources']);
-					
+
 					_kmq.push(['trackClick', 'summarize-evaluate', 'CHI: Clicked Summarize & Evaluate']);
 					_kmq.push(['trackClick', 'monitoring-evaluation', 'CHI: Clicked Monitoring & Evaluation']);
 					_kmq.push(['trackClick', 'case-study-resources', 'CHI: Clicked Case Study & Resources']);
-					_kmq.push(['trackClick', 'designing-implementing-evaluation', 'CHI: Clicked Designing & Implementing Your Evaluation']);					
+					_kmq.push(['trackClick', 'designing-implementing-evaluation', 'CHI: Clicked Designing & Implementing Your Evaluation']);
+					// Alternative less-specific catch-all listener.
+					// To use this catch-all, links must have class="chi-track-click" and data-event-name="Text of event to track".
+					// CHI: is prepended to these event names.
+					// Example: <a href="#" id="checkin-evaluate-i" class="chi-track-click" data-event-name="A test name">Test me!</a>
+					// jQuery(document).ready(function() {
+					// 	jQuery( '.chi-track-click' ).click(function( e ) {
+					// 		var event_name = jQuery( this ).data( 'event-name' );
+					// 		_kmq.push(['record', 'CHI:' + event_name]);
+					// 	});
+					// });
 				<?php
-				}	
+				}
 
 				// Health Equity: http://www.communitycommons.org/health-equity/
 				if( is_page( 41702 ) ) {
