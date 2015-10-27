@@ -113,82 +113,110 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['trackClick', '.target-intervention-area-tutorial', 'Clicked Target Area Intervention Tool tutorial videos']);
 				<?php
 				}
-				
-				//mel, do this more better
-				if( 36 == bp_get_current_group_id() && bp_is_current_action( 'chi-journey' ) && bp_is_action_variable( 'resources' ) ){
-				?>
-					console.log( 'CHI Journey' );
-					//_kmq.push(['record', 'CHI: Visited CHI Journey Tab: Resources']);
-					_kmq.push(['trackClick', 'principles_of_CHNA_process', 'Clicked CHI Resource', {
-					  'Title':'Principles of CHNA Process'
-					}]);
-					_kmq.push(['trackClick', 'CHI_glossary', 'Clicked CHI Resource', {
-					  'Title':'CHI Glossary'
-					}]);
-					_kmq.push(['trackClick', 'full_companion_guide', 'Clicked CHI Resource', {
-					  'Title':'Full Companion Guide'
-					}]);
-					_kmq.push(['trackClick', 'health_equity_guide', 'Clicked CHI Resource', {
-					  'Title':'Health Equity Guide'
-					}]);
-					_kmq.push(['trackClick', 'recommended_practices', 'Clicked CHI Resource', {
-					  'Title':'Recommended Practices'
-					}]);
-				
-				<?php }			
-				
 
 				//Community Health Improvement Journey - http://www.communitycommons.org/groups/chi/chi-journey/
 				// CHI is group id 36
-				if( 36 == bp_get_current_group_id() && bp_is_current_action( 'chi-journey' )  ) {
-					?>_kmq.push(['record', 'CHI: Visited CHI Journey Tab']);
-					_kmq.push(['trackClick', 'checkin-evaluate-i', 'CHI: Clicked Check-In & Evaluate I']);
-					_kmq.push(['trackClick', 'work-together', 'CHI: Clicked Work Together']);
-					_kmq.push(['trackClick', 'sustain-improvement', 'CHI: Clicked Sustain Improvement']);
-					_kmq.push(['trackClick', 'prioritize-vulnerability', 'CHI: Clicked Prioritize Vulnerability']);
+				if ( 36 == bp_get_current_group_id() ) {
+					$chi_current_action = bp_current_action();
+					if ( 'group-home' == $chi_current_action ) {
+						// This is the hub homepage.
+						// Track the resources classed "track-resource" on the hub home page.
+						// Track when the colored boxes expand
+						?>
+						jQuery( '#item-body article a.track-resource' ).click(function() {
+							var linkTitle = jQuery( this ).text();
+						    _kmq.push(['record', 'Clicked CHI Resource from Hub Home Page', {
+						   		'Title': linkTitle
+						   	}]);
+						});
+						<?php
+					} elseif ( 'chi-journey' == $chi_current_action ) {
+						// This is the "CHI Journey Tab"
+						// TODO: Track the resources on any of the 24 pages of the journey.
+						// These are not in the group, so we'll need to target some other way.
+						// Exclude links to maproom
+						// TODO: Track the links to the maproom separately
 
-					_kmq.push(['trackClick', 'checkin-evaluate-ii', 'CHI: Clicked Check-In & Evaluate II']);
-					_kmq.push(['trackClick', 'community-context', 'CHI: Clicked Community Context']);
-					_kmq.push(['trackClick', 'health-equity', 'CHI: Clicked Health Equity']);
-					_kmq.push(['trackClick', 'chna-reporting-tool', 'CHI: Clicked CHNA Reporting Tool']);
+						$chi_current_action_var = bp_action_variable();
+						if ( empty( $chi_current_action_var ) ) {
+							?>
+							// This is the "journey" page in the "journey" tab.
+							_kmq.push(['record', 'CHI: Visited CHI Journey Page']);
 
-					_kmq.push(['trackClick', 'checkin-evaluate-iii', 'CHI: Clicked Check-In & Evaluate III']);
-					_kmq.push(['trackClick', 'data-informed-decisions', 'CHI: Clicked Data-Informed Decisions']);
-					_kmq.push(['trackClick', 'community-engagement', 'CHI: Clicked Community Engagement']);
-					_kmq.push(['trackClick', 'identifying-priorities', 'CHI: Clicked Identifying Priorities']);
+							// Track the resources classed "track-resource" on the main journey page.
+							jQuery(document).ready(function() {
+								jQuery( '#item-body article a.track-resource' ).click(function() {
+									var linkTitle = jQuery( this ).text();
+								    _kmq.push(['record', 'Clicked CHI Resource from Journey Page', {
+								   		'Title': linkTitle
+								   	}]);
+								});
+							});
 
-					_kmq.push(['trackClick', 'checkin-evaluate-iv', 'CHI: Clicked Check-In & Evaluate IV']);
-					_kmq.push(['trackClick', 'selecting-interventions', 'CHI: Clicked Selecting Interventions']);
-					_kmq.push(['trackClick', 'effective-interventions', 'CHI: Clicked Effective Interventions']);
-					_kmq.push(['trackClick', 'case-studies-work-plans', 'CHI: Clicked Case Studies & Work Plans']);
+							// Track the clicks to any of the journey pages.
+							_kmq.push(['trackClick', 'checkin-evaluate-i', 'CHI: Clicked Check-In & Evaluate I']);
+							_kmq.push(['trackClick', 'work-together', 'CHI: Clicked Work Together']);
+							_kmq.push(['trackClick', 'sustain-improvement', 'CHI: Clicked Sustain Improvement']);
+							_kmq.push(['trackClick', 'prioritize-vulnerability', 'CHI: Clicked Prioritize Vulnerability']);
 
-					_kmq.push(['trackClick', 'checkin-evaluate-v', 'CHI: Clicked Check-In & Evaluate V']);
-					_kmq.push(['trackClick', 'create-an-action-plan', 'CHI: Clicked Creating an Action Plan']);
-					_kmq.push(['trackClick', 'activate-act-together', 'CHI: Clicked Activate & Act Together']);
-					_kmq.push(['trackClick', 'case-studies-resources', 'CHI: Clicked Case Studies & Resources']);
+							_kmq.push(['trackClick', 'checkin-evaluate-ii', 'CHI: Clicked Check-In & Evaluate II']);
+							_kmq.push(['trackClick', 'community-context', 'CHI: Clicked Community Context']);
+							_kmq.push(['trackClick', 'health-equity', 'CHI: Clicked Health Equity']);
+							_kmq.push(['trackClick', 'chna-reporting-tool', 'CHI: Clicked CHNA Reporting Tool']);
 
-					_kmq.push(['trackClick', 'summarize-evaluate', 'CHI: Clicked Summarize & Evaluate']);
-					_kmq.push(['trackClick', 'monitoring-evaluation', 'CHI: Clicked Monitoring & Evaluation']);
-					_kmq.push(['trackClick', 'case-study-resources', 'CHI: Clicked Case Study & Resources']);
-					_kmq.push(['trackClick', 'designing-implementing-evaluation', 'CHI: Clicked Designing & Implementing Your Evaluation']);
-					
-					//_kmq.push(['record', 'CHI: Visited CHI Journey Tab: Resources']);
-					_kmq.push(['trackClick', 'principles_of_CHNA_process', 'Clicked CHI Resource', {
-					  'Title':'Principles of CHNA Process'
-					}]);
-					_kmq.push(['trackClick', 'CHI_glossary', 'Clicked CHI Resource', {
-					  'Title':'CHI Glossary'
-					}]);
-					_kmq.push(['trackClick', 'full_companion_guide', 'Clicked CHI Resource', {
-					  'Title':'Full Companion Guide'
-					}]);
-					_kmq.push(['trackClick', 'health_equity_guide', 'Clicked CHI Resource', {
-					  'Title':'Health Equity Guide'
-					}]);
-					_kmq.push(['trackClick', 'recommended_practices', 'Clicked CHI Resource', {
-					  'Title':'Recommended Practices'
-					}]);
-				<?php
+							_kmq.push(['trackClick', 'checkin-evaluate-iii', 'CHI: Clicked Check-In & Evaluate III']);
+							_kmq.push(['trackClick', 'data-informed-decisions', 'CHI: Clicked Data-Informed Decisions']);
+							_kmq.push(['trackClick', 'community-engagement', 'CHI: Clicked Community Engagement']);
+							_kmq.push(['trackClick', 'identifying-priorities', 'CHI: Clicked Identifying Priorities']);
+
+							_kmq.push(['trackClick', 'checkin-evaluate-iv', 'CHI: Clicked Check-In & Evaluate IV']);
+							_kmq.push(['trackClick', 'selecting-interventions', 'CHI: Clicked Selecting Interventions']);
+							_kmq.push(['trackClick', 'effective-interventions', 'CHI: Clicked Effective Interventions']);
+							_kmq.push(['trackClick', 'case-studies-work-plans', 'CHI: Clicked Case Studies & Work Plans']);
+
+							_kmq.push(['trackClick', 'checkin-evaluate-v', 'CHI: Clicked Check-In & Evaluate V']);
+							_kmq.push(['trackClick', 'create-an-action-plan', 'CHI: Clicked Creating an Action Plan']);
+							_kmq.push(['trackClick', 'activate-act-together', 'CHI: Clicked Activate & Act Together']);
+							_kmq.push(['trackClick', 'case-studies-resources', 'CHI: Clicked Case Studies & Resources']);
+
+							_kmq.push(['trackClick', 'summarize-evaluate', 'CHI: Clicked Summarize & Evaluate']);
+							_kmq.push(['trackClick', 'monitoring-evaluation', 'CHI: Clicked Monitoring & Evaluation']);
+							_kmq.push(['trackClick', 'case-study-resources', 'CHI: Clicked Case Study & Resources']);
+							_kmq.push(['trackClick', 'designing-implementing-evaluation', 'CHI: Clicked Designing & Implementing Your Evaluation']);
+							<?php
+						} elseif ( 'resources' == $chi_current_action_var ) {
+							// Track the click of every link on the "resources" page
+							?>
+							_kmq.push(['record', 'CHI: Visited CHI Resources Page']);
+							jQuery(document).ready(function() {
+								jQuery( '#item-body article a' ).click(function() {
+									var linkTitle = jQuery( this ).text();
+								    _kmq.push(['record', 'Clicked CHI Resource', {
+								   		'Title': linkTitle
+								   	}]);
+								});
+							});
+							<?php
+						} elseif ( 'training-tools' == $chi_current_action_var ) {
+							// Track the resources classed "track-resource" on the main journey page.
+							?>
+							_kmq.push(['record', 'CHI: Visited CHI Training Tools Page']);
+							jQuery(document).ready(function() {
+								jQuery( '#item-body article a.track-resource' ).click(function() {
+									// The useful text is in a strong before the anchor.
+									var linkTitle = jQuery( this ).parent().find( 'strong' ).text();
+								    _kmq.push(['record', 'Clicked CHI Resource from Training Tools Page', {
+								   		'Title': linkTitle
+								   	}]);
+								});
+							});
+							<?php
+						} elseif ( 'acknowledgements' == $chi_current_action_var ) {
+							?>
+							_kmq.push(['record', 'CHI: Visited CHI Acknowledgements Page']);
+							<?php
+						}
+					}
 				}
 
 				// Health Equity: http://www.communitycommons.org/health-equity/
