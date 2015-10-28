@@ -123,11 +123,13 @@ if( !class_exists( 'KM_Filter' ) ) {
 						// Track the resources classed "track-resource" on the hub home page.
 						// Track when the colored boxes expand
 						?>
-						jQuery( '#item-body article a.track-resource' ).click(function() {
-							var linkTitle = jQuery( this ).text();
-						    _kmq.push(['record', 'Clicked CHI Resource from Hub Home Page', {
-						   		'Title': linkTitle
-						   	}]);
+						jQuery(document).ready(function() {
+							jQuery( '#item-body article a.track-resource' ).click(function() {
+								var linkTitle = jQuery( this ).text();
+							    _kmq.push(['record', 'Clicked CHI Resource from Hub Home Page', {
+							   		'Clicked CHI Resource Title': linkTitle
+							   	}]);
+							});
 						});
 						<?php
 					} elseif ( 'chi-journey' == $chi_current_action ) {
@@ -148,7 +150,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 								jQuery( '#item-body article a.track-resource' ).click(function() {
 									var linkTitle = jQuery( this ).text();
 								    _kmq.push(['record', 'Clicked CHI Resource from Journey Page', {
-								   		'Title': linkTitle
+								   		'Clicked CHI Resource Title': linkTitle
 								   	}]);
 								});
 							});
@@ -192,7 +194,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 								jQuery( '#item-body article a' ).click(function() {
 									var linkTitle = jQuery( this ).text();
 								    _kmq.push(['record', 'Clicked CHI Resource', {
-								   		'Title': linkTitle
+								   		'Clicked CHI Resource Title': linkTitle
 								   	}]);
 								});
 							});
@@ -206,7 +208,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 									// The useful text is in a strong before the anchor.
 									var linkTitle = jQuery( this ).parent().find( 'strong' ).text();
 								    _kmq.push(['record', 'Clicked CHI Resource from Training Tools Page', {
-								   		'Title': linkTitle
+								   		'Clicked CHI Resource Title': linkTitle
 								   	}]);
 								});
 							});
