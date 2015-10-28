@@ -482,6 +482,29 @@ if( !class_exists( 'KM_Filter' ) ) {
 		}
 
 		/**
+		 * Track when a group invitation is sent.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param int   $group_id      ID of the group.
+		 * @param array $invited_users Array of users being invited to the group.
+		 * @param int   $user_id       ID of the inviting user.
+		 */
+		public static function track_send_group_invites( $group_id, $invited_users, $user_id ) {
+			include_once('km.php');
+			$initiator = get_user_by( 'id', $user_id );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $initiator->user_email );
+			KM::record( 'Sent Hub Invitation', array( 'Sent hub invitation to hub id' => $group_id ) );
+
+			foreach ( $invited_users as $invitee_id ) {
+				$invitee = get_user_by( 'id', $invitee_id );
+				KM::set( array( 'Sent hub invitation to member' => $invitee->user_email ) );
+			}
+		}
+
+		/**
 		 * Track when a friendship is created.
 		 */
 		public static function track_create_friendship( $friendship_id, $initiator_user_id, $friend_user_id ) {
@@ -920,6 +943,8 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'groups_leave_group', array( 'KM_Filter', 'track_leave_bp_group' ), 17, 2 );
 	add_action( 'groups_remove_member', array( 'KM_Filter', 'track_removed_bp_group' ), 17, 2 );
 	add_action( 'groups_ban_member', array( 'KM_Filter', 'track_banned_bp_group' ), 17, 2 );
+	// Group invitations
+	add_action( 'groups_send_invites', array( 'KM_Filter', 'track_send_group_invites' ), 15, 3 );
 
 	// Friendships
 	add_action( 'friends_friendship_accepted', array( 'KM_Filter', 'track_create_friendship' ), 17, 3 );
