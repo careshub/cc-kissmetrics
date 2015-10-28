@@ -221,6 +221,33 @@ if( !class_exists( 'KM_Filter' ) ) {
 					}
 				}
 
+				// Salud America - http://www.communitycommons.org/groups/chi/salud-america/
+				if ( function_exists( 'sa_get_group_id' ) && sa_get_group_id() == bp_get_current_group_id() ) {
+					$sa_current_action = bp_current_action();
+					if ( 'group-home' == $sa_current_action ) {
+						// This is the hub homepage.
+						// Track the resources classed "track-resource" on the hub home page.
+						// Track when the colored boxes expand
+						?>
+						_kmq.push(['record', 'SA: Visited Hub Home Page']);
+						<?php
+					} elseif ( sa_get_tab_slug( 'take_action' ) == $sa_current_action ) {
+						// This is the "take action section" -- home to petitions and soon to video contests, too.
+						// Track the resources classed "track-resource" on the hub home page.
+						// Track when the colored boxes expand
+						?>
+						jQuery(document).ready(function() {
+							jQuery( '#item-body article a.sa-take-action-link' ).click(function() {
+								var linkTitle = jQuery( this ).data( 'petition-title' );
+							    _kmq.push(['record', 'Clicked Take Action button in a petition/campaign', {
+							   		'Clicked Take Action Button in petition': linkTitle
+							   	}]);
+							});
+						});
+						<?php
+					}
+				}
+
 				// Health Equity: http://www.communitycommons.org/health-equity/
 				if( is_page( 41702 ) ) {
 					?>_kmq.push(['trackClick', '_cc-mapwidget0', 'CHI Health Equity: Clicked Housing Map']);
