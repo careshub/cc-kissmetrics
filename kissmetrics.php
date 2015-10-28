@@ -672,6 +672,34 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		}
 
+		/**
+		* Activity stream - Track @mentions in activity updates.
+		*
+		* @param array $args Array of parsed arguments for the activity item being added.
+		*/
+		public static function track_activity_stream_mentions( $args ) {
+			// Add a user property if a user @mentions another user via the activity stream.
+	 		// Are there any @mentions in the update?
+	 		// This is fairly expensive, I suspect, but I can't think of a slicker way to get there.
+	 		$mentioned_users = bp_activity_find_mentions( $args['content'] );
+
+			if ( ! empty( $mentioned_users ) ) {
+				include_once('km.php');
+				KM::init( get_option( 'cc_kissmetrics_key' ) );
+
+				// Who made the post?
+				$user = get_user_by( 'id', $args['user_id'] );
+				KM::identify( $user->user_email );
+				KM::record( 'Mentioned a member in an update' );
+
+				// $mentioned_users takes the form array( $user_id => $username );
+				foreach ( $mentioned_users as $user_id => $username ) {
+					$mentionee = get_user_by( 'id', $user_id );
+					KM::set( array( 'Mentioned a member in an update' => $mentionee->user_email ) );
+				}
+			}
+		}
+
 		public static function track_comment_approval( $comment_id, $comment_status ) {
 			if ( $comment_status != 'approve' ) {
 				return false;
@@ -956,6 +984,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	//BuddyPress Activity Stream
 	add_action( 'bp_activity_add', array( 'KM_Filter', 'track_activity_stream_posts' ), 12, 3 );
 	add_action( 'bp_activity_add_user_favorite', array( 'KM_Filter', 'track_activity_stream_favorite' ), 12, 2 );
+	// Track @mentions
+	add_action( 'bp_activity_add', array( 'KM_Filter', 'track_activity_stream_mentions' ), 12, 3 );
+
 
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
