@@ -120,9 +120,11 @@ if( !class_exists( 'KM_Filter' ) ) {
 					$chi_current_action = bp_current_action();
 					if ( 'group-home' == $chi_current_action ) {
 						// This is the hub homepage.
+						// Track visiting the page.
 						// Track the resources classed "track-resource" on the hub home page.
 						// Track when the colored boxes expand
 						?>
+						_kmq.push(['record', 'CHI: Visited Hub Home Page']);
 						jQuery(document).ready(function() {
 							jQuery( '#item-body article a.track-resource' ).click(function() {
 								var linkTitle = jQuery( this ).text();
