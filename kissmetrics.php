@@ -142,7 +142,8 @@ if( !class_exists( 'KM_Filter' ) ) {
 						// TODO: Track the links to the maproom separately
 
 						$chi_current_action_var = bp_action_variable();
-						if ( empty( $chi_current_action_var ) ) {
+						if ( empty( $chi_current_action_var ) || 'journey' == $chi_current_action_var ) {
+							// This is the landing page of this tab, so it could be accessed via the tab (and it would be empty) or via the subnav within the tab and it would be "journey".
 							?>
 							// This is the "journey" page in the "journey" tab.
 							_kmq.push(['record', 'CHI: Visited CHI Journey Page']);
