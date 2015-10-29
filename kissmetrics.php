@@ -771,14 +771,55 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 		/**
 		 * Track when a user votes in the Salud America video contest.
-		 * @param 	WP_User  $member WP_User object.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param int   $contest_id  ID of the contest the user voted in.
+		 * @param int   $user_id     ID of the voter.
 		 */
-		public static function track_sa_video_contest_vote( $user ) {
+		public static function track_sa_video_contest_vote( $contest_id, $user_id ) {
 			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
+			$contest_title = get_the_title( $contest_id );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Voted in Salud America video contest' );
+			KM::record( 'Voted in Salud America video contest', array( "SA: Voted in video contest" => $contest_title ) );
+		}
+
+		/**
+		 * Track when the "Share Your Story" form is submitted.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param int   $entry  A Gravity Forms entry array.
+		 * @param int   $form   A Gravity Forms form array.
+		 */
+		public static function track_sa_share_story_submit( $entry, $form ){
+			include_once('km.php');
+			// The form field "email address" has field_id of 4, so that's how it's keyed in the entry array.
+			$email_address = $entry['4'];
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $email_address );
+			KM::record( 'SA: Submitted Share Your Story form' );
+
+		}
+
+		/**
+		 * Track when a user votes in the Salud America video contest.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param int   $user_id     ID of the user.
+		 */
+		public static function track_sa_add_user_to_leader_map( $user_id ) {
+			include_once('km.php');
+			$user = get_user_by( 'id', $user_id );
+
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+			KM::identify( $user->user_email );
+			KM::record( 'SA: Added self to leader map' );
 		}
 
 		/**
@@ -1024,7 +1065,11 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 	// Salud America
 	// Voted on video contest
-	add_action( 'after_sa_video_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 1 );
+	add_action( 'sa_count_video_contest_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 2 );
+	// Submitted "Share Your Story" form (id:12)
+	add_action( 'gform_after_submission_12', array( 'KM_Filter', 'track_sa_share_story_submit' ), 10, 2);
+	// Added self to leader map or updated location info
+	add_action( 'sa_add_user_to_leader_map', array( 'KM_Filter', 'track_sa_add_user_to_leader_map' ) );
 
 	// Hub Narratives
 	add_action( 'transition_post_status', array( 'KM_Filter', 'track_hub_narrative_publish' ), 10, 3 );
