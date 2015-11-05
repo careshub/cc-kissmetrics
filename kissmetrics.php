@@ -615,10 +615,21 @@ if( !class_exists( 'KM_Filter' ) ) {
 		* @param object $args BP_Docs_Query object at time of doc save.
 		*/
 		public static function track_new_bp_doc( $args ) {
-
 			include_once('km.php');
 
 			$doc_id  = $args->doc_id;
+
+			// First, check what type of doc this is.
+			// We don't want to track maps, reports, areas--only docs.
+			$terms = wp_get_object_terms( $doc_id, 'bp_docs_type' );
+			$term_slug = '';
+			if ( ! empty( $terms ) ) {
+				$term_slug = current( $terms )->slug;
+			}
+			if ( 'doc' != $term_slug ) {
+				return;
+			}
+
 			$user_id = get_post_meta( $doc_id, 'bp_docs_last_editor', true );
 			$user    = get_user_by( 'id', $user_id );
 
