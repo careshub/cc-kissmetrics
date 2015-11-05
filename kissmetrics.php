@@ -132,6 +132,12 @@ if( !class_exists( 'KM_Filter' ) ) {
 							   		'Clicked CHI Resource Title': linkTitle
 							   	}]);
 							});
+							jQuery( '#item-body article a.toggle-trigger' ).click(function() {
+								var linkTitle = jQuery( this ).text();
+							    _kmq.push(['record', 'Toggled Whats in it for me section', {
+							   		'Toggled Whats in it for me section': linkTitle
+							   	}]);
+							});
 						});
 						<?php
 					} elseif ( 'chi-journey' == $chi_current_action ) {
@@ -224,6 +230,54 @@ if( !class_exists( 'KM_Filter' ) ) {
 					}
 				}
 
+				// CHI Journey: Health Equity page: http://www.communitycommons.org/health-equity/
+				if( is_page( 41702 ) ) {
+					?>_kmq.push(['trackClick', '_cc-mapwidget0', 'CHI Health Equity: Clicked Housing Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget1', 'CHI Health Equity: Clicked Transportation Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget2', 'CHI Health Equity: Clicked Food Map']);
+					_kmq.push(['trackClick', '_cc-mapwidget3', 'CHI Health Equity: Clicked Culture Map']);
+				<?php
+				}
+
+				// Track clicks from the various CHI Journey pages.
+				// These pages live outside the hub but all use the same page template.
+			    if ( is_page_template( 'page-templates/chi-journey.php' ) ) {
+					// Track the click of every link that doesn't go to maps.cc.org or assessment.cc.org
+					// Track link text. Some links don't have link text, so we grab the filename they're accessing.
+					// Track map links by their nearby header.
+					// Track assessment links by their link text.
+					?>
+					_kmq.push(['record', 'CHI: Visited CHI Journey Page']);
+					jQuery(document).ready(function() {
+						jQuery( '#content article a' ).click(function() {
+							var target = jQuery( this ).attr("href");
+							if ( target.indexOf("maps.communitycommons") >= 0 ) {
+								// Many of these are covered above!
+								// var linkTitle = jQuery( this ).parents( '.half-block' ).find( 'h2' ).text();
+							 //    _kmq.push(['record', 'CHI: Clicked map link from journey', {
+							 //   		'CHI: Clicked map link from journey': linkTitle
+							 //   	}]);
+							} else if ( target.indexOf("assessment.communitycommons") >= 0 ) {
+								var linkTitle = jQuery( this ).text();
+							    _kmq.push(['record', 'CHI: Clicked report link from journey', {
+							   		'CHI: Clicked report link from journey': linkTitle
+							   	}]);
+							} else {
+								console.log( 'clicked something else!' );
+								var linkTitle = jQuery( this ).text();
+								// Fall back to the target file if no link text.
+								if ( linkTitle.length == 0 ) {
+									linkTitle = target.split('/').pop();
+								}
+							    _kmq.push(['record', 'Clicked CHI Resource', {
+							   		'Clicked CHI Resource Title': linkTitle
+							   	}]);
+							}
+						});
+					});
+					<?php
+			    }
+
 				// Salud America - http://www.communitycommons.org/groups/chi/salud-america/
 				if ( function_exists( 'sa_get_group_id' ) && sa_get_group_id() == bp_get_current_group_id() ) {
 					$sa_current_action = bp_current_action();
@@ -249,15 +303,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 						});
 						<?php
 					}
-				}
-
-				// Health Equity: http://www.communitycommons.org/health-equity/
-				if( is_page( 41702 ) ) {
-					?>_kmq.push(['trackClick', '_cc-mapwidget0', 'CHI Health Equity: Clicked Housing Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget1', 'CHI Health Equity: Clicked Transportation Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget2', 'CHI Health Equity: Clicked Food Map']);
-					_kmq.push(['trackClick', '_cc-mapwidget3', 'CHI Health Equity: Clicked Culture Map']);
-				<?php
 				}
 
 				// Front page views
