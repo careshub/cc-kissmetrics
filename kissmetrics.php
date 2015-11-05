@@ -250,24 +250,24 @@ if( !class_exists( 'KM_Filter' ) ) {
 					_kmq.push(['record', 'CHI: Visited CHI Journey Page']);
 					jQuery(document).ready(function() {
 						jQuery( '#content article a' ).click(function() {
-							var target = jQuery( this ).attr("href");
+							var target = jQuery( this ).closest( 'a' ).attr("href");
 							if ( target.indexOf("maps.communitycommons") >= 0 ) {
 								// Many of these are covered above!
 								// var linkTitle = jQuery( this ).parents( '.half-block' ).find( 'h2' ).text();
-							 //    _kmq.push(['record', 'CHI: Clicked map link from journey', {
-							 //   		'CHI: Clicked map link from journey': linkTitle
-							 //   	}]);
+								 // _kmq.push(['record', 'CHI: Clicked map link from journey', {
+								 // 	'CHI: Clicked map link from journey': linkTitle
+								 // }]);
 							} else if ( target.indexOf("assessment.communitycommons") >= 0 ) {
 								var linkTitle = jQuery( this ).text();
 							    _kmq.push(['record', 'CHI: Clicked report link from journey', {
 							   		'CHI: Clicked report link from journey': linkTitle
 							   	}]);
 							} else {
-								console.log( 'clicked something else!' );
-								var linkTitle = jQuery( this ).text();
-								// Fall back to the target file if no link text.
-								if ( linkTitle.length == 0 ) {
-									linkTitle = target.split('/').pop();
+								// Use the data-kissevent value if it exists
+								var linkTitle = jQuery( this ).data("kissevent");
+								// Fall back to the text in the anchor otherwise.
+								if ( linkTitle === undefined ) {
+									linkTitle = jQuery( this ).text();
 								}
 							    _kmq.push(['record', 'Clicked CHI Resource', {
 							   		'Clicked CHI Resource Title': linkTitle
