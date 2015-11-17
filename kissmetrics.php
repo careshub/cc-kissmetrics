@@ -486,6 +486,16 @@ if( !class_exists( 'KM_Filter' ) ) {
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
 			KM::record( 'Created account / registered' );
+
+			// Include the "Primary Affiliation" field, could be more than one.
+			// We fetch the affiliations by field id.
+			$affiliations = xprofile_get_field_data( 1218, $user_id );
+			// Loop through once at a time, because of the whole array keys thing.
+			if ( ! empty( $affiliations ) ) {
+				foreach ( $affiliations as $affiliation ) {
+					KM::set( array( 'Primary Affiliation' => $affiliation ) );
+				}
+			}
 		}
 
 		/**
@@ -1048,6 +1058,39 @@ if( !class_exists( 'KM_Filter' ) ) {
 			}
 		}
 
+		/**
+		 * Update user properties based on xprofile input.
+		 *
+		 * @param int   $value            Displayed user ID.
+		 * @param array $posted_field_ids Array of field IDs that were edited.
+		 * @param bool  $errors           Whether or not any errors occurred.
+		 * @param array $old_values       Array of original values before updated.
+		 * @param array $new_values       Array of newly saved values after update.
+		 */
+		public function track_xprofile_update( $user_id, $posted_field_ids = array(), $errors = false, $old_values = array(), $new_values = array() ) {
+
+			// Update Primary Affiliation if updated.
+			// 1218 is the field ID.
+			if ( in_array( 1218, $posted_field_ids ) ) {
+				// 1218 is the primary affiliation field.
+				if ( ! empty( $new_values[1218]['value'] ) && ( $old_values[1218]['value'] != $new_values[1218]['value'] ) ) {
+					include_once('km.php');
+					$user = get_user_by( 'id', $user_id );
+					KM::init( get_option( 'cc_kissmetrics_key' ) );
+					KM::identify( $user->user_email );
+
+					// Include the "Primary Affiliation" field, could be more than one.
+					$affiliations = xprofile_get_field_data( 1218, $user_id );
+					// Loop through once at a time, because of the whole array keys thing.
+					if ( ! empty( $affiliations ) ) {
+						foreach ( $affiliations as $affiliation ) {
+							KM::set( array( 'Primary Affiliation' => $affiliation ) );
+						}
+					}
+				}
+			}
+		}
+
 		// Helper functions
 		// If the user is not logged in, you can use this function to get the best value from KISS's cookies
 		// From within this class, use $identity = self::read_js_identity()
@@ -1137,5 +1180,9 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	add_action( 'bbp_new_topic', array( 'KM_Filter', 'track_bbpress_topic_creation' ), 18, 4 );
 	add_action( 'bbp_new_reply', array( 'KM_Filter', 'track_bbpress_topic_replies' ), 18, 7 );
 	add_action( 'bbp_add_user_subscription', array( 'KM_Filter', 'track_bbpress_object_subscription' ), 18, 3 );
+
+	// User extended profile
+	add_action( 'xprofile_updated_profile', array( 'KM_Filter', 'track_xprofile_update' ), 88, 5 );
+
 
 }
