@@ -388,7 +388,8 @@ if( !class_exists( 'KM_Filter' ) ) {
 					if ( $post_id = get_the_ID() ) {
 						// We're only interested in the posts written by IP3
 						// staff for the Commons blog.
-						if ( 'post' == get_post_type( $post_id ) ) {
+						$post_type = get_post_type( $post_id );
+						if ( 'post' == $post_type ) {
 							$post_event = array(
 								'record',
 								'Viewed Post',
@@ -412,6 +413,25 @@ if( !class_exists( 'KM_Filter' ) ) {
 									<?php
 								}
 							}
+						} elseif ( bp_docs_get_post_type_name() == $post_type ) {
+							// We also want to track visits to BP Docs.
+							$properties = array();
+							$properties[ 'Accessed library item with title' ] = get_the_title( $post_id );
+							$author_id = get_post_field( 'post_author', $post_id );
+							$properties[ 'Accessed library item by author' ] = get_the_author_meta( 'user_email', $author_id );
+
+							if ( $group_id = bp_docs_get_associated_group_id( $post_id ) ) {
+								$group_obj = groups_get_group( array( 'group_id' => $group_id ) );
+								$properties['Accessed library item in group'] = $group_obj->name;
+							}
+
+							$post_event = array(
+								'record',
+								'Accessed library item',
+								$properties
+							);
+							?>_kmq.push(<?php echo json_encode( $post_event ); ?>);
+							<?php
 						}
 					}
 				}
@@ -731,11 +751,6 @@ if( !class_exists( 'KM_Filter' ) ) {
 					KM::record( $event );
 				}
 			}
-
-			$towrite = PHP_EOL . print_r($args, TRUE);
-			$fp = fopen('activity_args.txt', 'a');
-			fwrite($fp, $towrite);
-			fclose($fp);
 		}
 
 		// Track when a user favorites an activity item
@@ -792,6 +807,39 @@ if( !class_exists( 'KM_Filter' ) ) {
 				foreach ( $mentioned_users as $user_id => $username ) {
 					$mentionee = get_user_by( 'id', $user_id );
 					KM::set( array( 'Mentioned a member in an update' => $mentionee->user_email ) );
+				}
+			}
+		}
+
+		/**
+		* BP private messaging - Track sending or replying to private messages.
+		*
+		* @param BP_Messages_Message $message Message object. Note: passed by reference!
+		*/
+		public static function track_private_messages( $message ) {
+			include_once('km.php');
+			KM::init( get_option( 'cc_kissmetrics_key' ) );
+
+			$sender = get_user_by( 'id', $message->sender_id );
+			KM::identify( $sender->user_email );
+
+			// Fetch the message thread
+			$thread = new BP_Messages_Thread( $message->thread_id, 'ASC', array( 'update_meta_cache' => false ) );
+
+			// If there's only one message in this thread, it's the original message.
+			if ( count( $thread->messages ) == 1 ) {
+				$action = 'Sent private message';
+			} else {
+				// Otherwise it's a reply.
+				$action = 'Replied to private message';
+			}
+			KM::record( $action );
+
+			// Who is this user communicating with? Could be one or many, so we have to loop.
+			foreach ( $thread->recipients as $recipient ) {
+				if ( $recipient->user_id != $message->sender_id ) {
+					$user = get_user_by( 'id', $recipient->user_id );
+					KM::set( array( 'Sent private message to' => $user->user_email ) );
 				}
 			}
 		}
@@ -1157,6 +1205,8 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Track @mentions
 	add_action( 'bp_activity_add', array( 'KM_Filter', 'track_activity_stream_mentions' ), 12, 3 );
 
+	// BuddyPress private messages
+	add_action( 'messages_message_sent', array( 'KM_Filter', 'track_private_messages' ) );
 
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
