@@ -438,32 +438,56 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 				?>
 				jQuery(document).ready(function() {
-                <?php
-                // Begin jQuery-based stuff
-                    // Clicks on "Contact" in the footer or "Still Stuck" on Support pages
-                	// Ticket submits have to be done another way--the ticket form is loaded in an iframe with a different domain, so we can't get data from it directly.
-                    $launched_zd = array(
-                                'record',
-                                'Opened support ticket creation dialog'
-                            );
-                    ?>jQuery('a[href^="https://ip3.zendesk.com"]').click( function(e) {
-                            _kmq.push(<?php echo json_encode( $launched_zd ); ?>);
-                    });
-                    <?php
-                    // Track clicks on the various "share" buttons.
-                    ?>
-                    jQuery('.bpsi > a').click( function(e) {
-                            _kmq.push([
-                            	'record',
-                            	'Shared item',
-                            	{
-                            		'Shared item of type': jQuery( this ).data( 'shared-item' ),
-                            		'Shared item with name': jQuery( this ).data( 'shared-title' ),
-                            		'Shared item to': jQuery( this ).data( 'shared-to' )
-                            	}
-                            	]);
-                    });
-                });
+				<?php
+				// Begin jQuery-based stuff
+					// Clicks on "Contact" in the footer or "Still Stuck" on Support pages
+					// Ticket submits have to be done another way--the ticket form is loaded in an iframe with a different domain, so we can't get data from it directly.
+					$launched_zd = array(
+								'record',
+								'Opened support ticket creation dialog'
+							);
+					?>jQuery('a[href^="https://ip3.zendesk.com"]').click( function(e) {
+							_kmq.push(<?php echo json_encode( $launched_zd ); ?>);
+					});
+					<?php
+					// Track clicks on the various "share" buttons.
+					?>
+					jQuery('.bpsi > a').click( function(e) {
+							_kmq.push([
+								'record',
+								'Shared item',
+								{
+									'Shared item of type': jQuery( this ).data( 'shared-item' ),
+									'Shared item with name': jQuery( this ).data( 'shared-title' ),
+									'Shared item to': jQuery( this ).data( 'shared-to' )
+								}
+								]);
+					});
+					<?php
+					if ( is_tax( 'cc_help_topics' ) ) :
+						// Track clicks to PDF help documents--these happen within help topic term archives.
+						?>
+						jQuery('a[href$=pdf]').click( function(e) {
+							_kmq.push([
+								'record',
+								'Viewed support how-to',
+								{
+									'Viewed support how-to with title': jQuery( this ).parents( '.third-block' ).find( '.cchelp-item-title' ).text()
+								}
+								]);
+							if ( jQuery( '#guidebook-topic-title' ).length ) {
+								_kmq.push([
+									'set',
+									{
+										'Viewed support how-to in guidebook': jQuery( '#guidebook-topic-title' ).text()
+									}
+								]);
+							}
+						});
+						<?php
+					endif; // if ( is_tax( 'cc_help_topics' ) )
+					?>
+				});
 				</script>
 				<?php
 			}
