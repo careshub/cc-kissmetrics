@@ -43,10 +43,10 @@ if( !class_exists( 'KM_Filter' ) ) {
 			  var _kmq = _kmq || [];
 			  var _kmk = _kmk || '<?php echo $km_key; ?>';
 			  function _kms(u){
-			    setTimeout(function(){
-			    var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0]; s.type = 'text/javascript'; s.async = true;
-			    s.src = u; f.parentNode.insertBefore(s, f);
-			    }, 1);
+				setTimeout(function(){
+				var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0]; s.type = 'text/javascript'; s.async = true;
+				s.src = u; f.parentNode.insertBefore(s, f);
+				}, 1);
 			  }
 			  _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/' + _kmk + '.1.js');
 			 <?php
@@ -63,30 +63,30 @@ if( !class_exists( 'KM_Filter' ) ) {
 					?>_kmq.push(function() {
 						if(window.twttr) {
 						  window.twttr.events.bind('tweet', function (event) {
-						    var url = KM.uprts(decodeURIComponent(event.target.src).replace('#', '?')).params.url;
-						    _kmq.push(['record', 'Tweet', { 'Shared URL': url }]);
+							var url = KM.uprts(decodeURIComponent(event.target.src).replace('#', '?')).params.url;
+							_kmq.push(['record', 'Tweet', { 'Shared URL': url }]);
 						  });
 
 						  window.twttr.events.bind('follow', function (event) {
-						  	_kmq.push(['record', 'Twitter Follow', { 'Username': event.data.screen_name }]);
+							_kmq.push(['record', 'Twitter Follow', { 'Username': event.data.screen_name }]);
 						  });
 						}
 
 						if(window.FB) {
 						  window.FB.Event.subscribe('edge.create', function (url) {
-						    _kmq.push(['record', 'Like', { 'Shared URL': url }]);
+							_kmq.push(['record', 'Like', { 'Shared URL': url }]);
 						  });
 
 						  window.FB.Event.subscribe('edge.remove', function (url) {
-						    _kmq.push(['record', 'Unlike', { 'Shared URL': url }]);
+							_kmq.push(['record', 'Unlike', { 'Shared URL': url }]);
 						  });
 
 						  window.FB.Event.subscribe('auth.login', function (url) {
-						    _kmq.push(['record', 'Facebook Connect\'d']);
+							_kmq.push(['record', 'Facebook Connect\'d']);
 						  });
 
 						  window.FB.Event.subscribe('auth.logout', function (url) {
-						    _kmq.push(['record', 'Facebook Logout']);
+							_kmq.push(['record', 'Facebook Logout']);
 						  });
 						}
 					});
@@ -128,15 +128,15 @@ if( !class_exists( 'KM_Filter' ) ) {
 						jQuery(document).ready(function() {
 							jQuery( '#item-body article a.track-resource' ).click(function() {
 								var linkTitle = jQuery( this ).text();
-							    _kmq.push(['record', 'Clicked CHI Resource from Hub Home Page', {
-							   		'Clicked CHI Resource Title': linkTitle
-							   	}]);
+								_kmq.push(['record', 'Clicked CHI Resource from Hub Home Page', {
+									'Clicked CHI Resource Title': linkTitle
+								}]);
 							});
 							jQuery( '#item-body article a.toggle-trigger' ).click(function() {
 								var linkTitle = jQuery( this ).text();
-							    _kmq.push(['record', 'Toggled Whats in it for me section', {
-							   		'Toggled Whats in it for me section': linkTitle
-							   	}]);
+								_kmq.push(['record', 'Toggled Whats in it for me section', {
+									'Toggled Whats in it for me section': linkTitle
+								}]);
 							});
 						});
 						<?php
@@ -158,9 +158,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 							jQuery(document).ready(function() {
 								jQuery( '#item-body article a.track-resource' ).click(function() {
 									var linkTitle = jQuery( this ).text();
-								    _kmq.push(['record', 'Clicked CHI Resource from Journey Page', {
-								   		'Clicked CHI Resource Title': linkTitle
-								   	}]);
+									_kmq.push(['record', 'Clicked CHI Resource from Journey Page', {
+										'Clicked CHI Resource Title': linkTitle
+									}]);
 								});
 							});
 
@@ -202,9 +202,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 							jQuery(document).ready(function() {
 								jQuery( '#item-body article a' ).click(function() {
 									var linkTitle = jQuery( this ).text();
-								    _kmq.push(['record', 'Clicked CHI Resource', {
-								   		'Clicked CHI Resource Title': linkTitle
-								   	}]);
+									_kmq.push(['record', 'Clicked CHI Resource', {
+										'Clicked CHI Resource Title': linkTitle
+									}]);
 								});
 							});
 							<?php
@@ -216,9 +216,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 								jQuery( '#item-body article a.track-resource' ).click(function() {
 									// The useful text is in a strong before the anchor.
 									var linkTitle = jQuery( this ).parent().find( 'strong' ).text();
-								    _kmq.push(['record', 'Clicked CHI Resource from Training Tools Page', {
-								   		'Clicked CHI Resource Title': linkTitle
-								   	}]);
+									_kmq.push(['record', 'Clicked CHI Resource from Training Tools Page', {
+										'Clicked CHI Resource Title': linkTitle
+									}]);
 								});
 							});
 							<?php
@@ -241,7 +241,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 
 				// Track clicks from the various CHI Journey pages.
 				// These pages live outside the hub but all use the same page template.
-			    if ( is_page_template( 'page-templates/chi-journey.php' ) ) {
+				if ( is_page_template( 'page-templates/chi-journey.php' ) ) {
 					// Track the click of every link that doesn't go to maps.cc.org or assessment.cc.org
 					// Track link text. Some links don't have link text, so we grab the filename they're accessing.
 					// Track map links by their nearby header.
@@ -259,9 +259,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 								 // }]);
 							} else if ( target.indexOf("assessment.communitycommons") >= 0 ) {
 								var linkTitle = jQuery( this ).text();
-							    _kmq.push(['record', 'CHI: Clicked report link from journey', {
-							   		'CHI: Clicked report link from journey': linkTitle
-							   	}]);
+								_kmq.push(['record', 'CHI: Clicked report link from journey', {
+									'CHI: Clicked report link from journey': linkTitle
+								}]);
 							} else {
 								// Use the data-kissevent value if it exists
 								var linkTitle = jQuery( this ).data("kissevent");
@@ -269,14 +269,14 @@ if( !class_exists( 'KM_Filter' ) ) {
 								if ( linkTitle === undefined ) {
 									linkTitle = jQuery( this ).text();
 								}
-							    _kmq.push(['record', 'Clicked CHI Resource', {
-							   		'Clicked CHI Resource Title': linkTitle
-							   	}]);
+								_kmq.push(['record', 'Clicked CHI Resource', {
+									'Clicked CHI Resource Title': linkTitle
+								}]);
 							}
 						});
 					});
 					<?php
-			    }
+				}
 
 				// Salud America - http://www.communitycommons.org/groups/chi/salud-america/
 				if ( function_exists( 'sa_get_group_id' ) && sa_get_group_id() == bp_get_current_group_id() ) {
@@ -296,9 +296,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 						jQuery(document).ready(function() {
 							jQuery( '#item-body article a.sa-take-action-link' ).click(function() {
 								var linkTitle = jQuery( this ).data( 'petition-title' );
-							    _kmq.push(['record', 'Clicked Take Action button in a petition/campaign', {
-							   		'Clicked Take Action Button in petition': linkTitle
-							   	}]);
+								_kmq.push(['record', 'Clicked Take Action button in a petition/campaign', {
+									'Clicked Take Action Button in petition': linkTitle
+								}]);
 							});
 						});
 						<?php
@@ -557,7 +557,7 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * Track when a user logs in.
 		 */
 		public static function track_cc_login( $user_login, $user ) {
-		    include_once('km.php');
+			include_once('km.php');
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
@@ -814,9 +814,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 		*/
 		public static function track_activity_stream_mentions( $args ) {
 			// Add a user property if a user @mentions another user via the activity stream.
-	 		// Are there any @mentions in the update?
-	 		// This is fairly expensive, I suspect, but I can't think of a slicker way to get there.
-	 		$mentioned_users = bp_activity_find_mentions( $args['content'] );
+			// Are there any @mentions in the update?
+			// This is fairly expensive, I suspect, but I can't think of a slicker way to get there.
+			$mentioned_users = bp_activity_find_mentions( $args['content'] );
 
 			if ( ! empty( $mentioned_users ) ) {
 				include_once('km.php');
@@ -1168,9 +1168,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 		// From within this class, use $identity = self::read_js_identity()
 		public function read_js_identity() {
 		  if ( isset( $_COOKIE['km_ni'] ) ) {
-		    return $_COOKIE['km_ni'];
+			return $_COOKIE['km_ni'];
 		  } else if ( isset( $_COOKIE['km_ai'] ) ) {
-		    return $_COOKIE['km_ai'];
+			return $_COOKIE['km_ai'];
 		  }
 		}
 
@@ -1235,8 +1235,8 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Comments
 	add_action( 'wp_set_comment_status', array( 'KM_Filter', 'track_comment_approval' ), 17, 2 );
 
-    // Track GOGIS request group form submission
-    // 17 is the form id, so this will only fire on that form's submission
+	// Track GOGIS request group form submission
+	// 17 is the form id, so this will only fire on that form's submission
 	add_action( 'gform_after_submission_17', array( 'KM_Filter', 'cogis_new_subgroup_form_submission' ), 10, 2);
 
 	// Salud America
