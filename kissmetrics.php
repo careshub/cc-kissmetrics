@@ -962,15 +962,20 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 *
 		 * @since 1.2.0
 		 *
-		 * @param int   $user_id     ID of the user.
+		 * @param int    $user_id     ID of the user.
+ 		 * @param string $location    Location field value.
+		 * @param string $coordinates Calculated coordinates based on location.
 		 */
-		public static function track_sa_add_user_to_leader_map( $user_id ) {
+		public static function track_sa_add_user_to_leader_map( $user_id, $location, $coordinates ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'SA: Added self to leader map' );
+			KM::record( 'SA: Added self to leader map', array(
+				'Salud America location' => $location,
+				'Salud America Leader Map Long/lat' => $coordinates
+				) );
 		}
 
 		/**
@@ -1255,7 +1260,7 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// Submitted "Share Your Story" form (id:12)
 	add_action( 'gform_after_submission_12', array( 'KM_Filter', 'track_sa_share_story_submit' ), 10, 2);
 	// Added self to leader map or updated location info
-	add_action( 'sa_add_user_to_leader_map', array( 'KM_Filter', 'track_sa_add_user_to_leader_map' ) );
+	add_action( 'sa_add_user_to_leader_map', array( 'KM_Filter', 'track_sa_add_user_to_leader_map' ), 10, 3 );
 
 	// Hub Narratives
 	add_action( 'transition_post_status', array( 'KM_Filter', 'track_hub_narrative_publish' ), 10, 3 );
