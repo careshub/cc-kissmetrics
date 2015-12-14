@@ -302,6 +302,16 @@ if( !class_exists( 'KM_Filter' ) ) {
 							});
 						});
 						<?php
+					} elseif ( sa_get_tab_slug( 'search' ) == $sa_current_action ) {
+						// Track when a user searches the Salud America hub.
+						?>
+						jQuery(document).ready(function() {
+							var search_terms = jQuery( '#salud-hub-search-text' ).val();
+							_kmq.push(['record', 'Searched Salud America Hub', {
+								'Searched Salud America Hub for search terms': search_terms
+							}]);
+						});
+						<?php
 					}
 				}
 
