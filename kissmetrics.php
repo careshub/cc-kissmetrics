@@ -1189,6 +1189,25 @@ if( !class_exists( 'KM_Filter' ) ) {
 		  }
 		}
 
+		/**
+		 * CC stats - report which hubs use this plugin in a custom way.
+		 *
+		 * @param array $custom_plugins
+		 * @param int   $group_id ID of the group that's being checked
+		 *
+		 */
+		public static function report_custom_plugin( $custom_plugins, $group_id ) {
+			// Salud America
+			if ( function_exists('sa_get_group_id') && $group_id == sa_get_group_id() ) {
+				$custom_plugins[] = "CC KISSMetrics";
+			}
+			// CHI
+			if ( $group_id == 36 ) {
+				$custom_plugins[] = "CC KISSMetrics";
+			}
+			return $custom_plugins;
+		}
+
 	} // End class 'KM_Filter'
 } // End class_exists check
 
@@ -1273,5 +1292,6 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 	// User extended profile
 	add_action( 'xprofile_updated_profile', array( 'KM_Filter', 'track_xprofile_update' ), 88, 5 );
 
-
+	// CC stats - report which hubs use this plugin in a custom way.
+	add_filter( 'cc_stats_custom_plugins', array( 'KM_Filter', 'report_custom_plugin' ), 10, 2 );
 }
