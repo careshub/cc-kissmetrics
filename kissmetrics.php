@@ -312,6 +312,18 @@ if( !class_exists( 'KM_Filter' ) ) {
 							}]);
 						});
 						<?php
+					} elseif ( sa_get_tab_slug( 'big-bets' ) == $sa_current_action ) {
+						// Track opening advocacy target term resources.
+						?>
+						jQuery(document).ready(function() {
+							jQuery( 'a.sa-term-info-link' ).click(function() {
+								var eventName = jQuery( this ).data( 'kiss-event' );
+								_kmq.push(['record', 'Downloaded an advocacy target resource', {
+									'Downloaded an advocacy target resource': eventName
+								}]);
+							});
+						});
+						<?php
 					}
 				}
 
