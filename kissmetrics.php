@@ -317,9 +317,9 @@ if( !class_exists( 'KM_Filter' ) ) {
 						?>
 						jQuery(document).ready(function() {
 							jQuery( 'a.sa-term-info-link' ).click(function() {
-								var eventName = jQuery( this ).data( 'kiss-event' );
-								_kmq.push(['record', 'Downloaded an advocacy target resource', {
-									'Downloaded an advocacy target resource': eventName
+								var eventName = 'SA: ' + jQuery( this ).data( 'kiss-event' );
+								_kmq.push(['record', 'SA: Downloaded an advocacy target resource', {
+									'SA: Downloaded an advocacy target resource': eventName
 								}]);
 							});
 						});
