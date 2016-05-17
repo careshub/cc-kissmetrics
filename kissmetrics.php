@@ -946,6 +946,8 @@ if( !class_exists( 'KM_Filter' ) ) {
 			$contest_title = get_the_title( $contest_id );
 
 			// Get the title of the video the user voted for.
+			$meta_key = 'sa_video_contest_title_' . $video_id;
+			$video_title = get_post_meta( $contest_id, $meta_key, true );
 
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
