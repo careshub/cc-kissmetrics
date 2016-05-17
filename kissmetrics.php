@@ -940,14 +940,16 @@ if( !class_exists( 'KM_Filter' ) ) {
 		 * @param int   $contest_id  ID of the contest the user voted in.
 		 * @param int   $user_id     ID of the voter.
 		 */
-		public static function track_sa_video_contest_vote( $contest_id, $user_id ) {
+		public static function track_sa_video_contest_vote( $contest_id, $user_id, $video_id ) {
 			include_once('km.php');
 			$user = get_user_by( 'id', $user_id );
 			$contest_title = get_the_title( $contest_id );
 
+			// Get the title of the video the user voted for.
+
 			KM::init( get_option( 'cc_kissmetrics_key' ) );
 			KM::identify( $user->user_email );
-			KM::record( 'Voted in Salud America video contest', array( "SA: Voted in video contest" => $contest_title ) );
+			KM::record( 'Voted in Salud America video contest', array( "SA: Voted in video contest" => $contest_title, "SA: Voted for video entitled" => $video_title ) );
 		}
 
 		/**
@@ -1287,7 +1289,7 @@ if( $km_key != '' && function_exists( 'get_option' ) ) {
 
 	// Salud America
 	// Voted on video contest
-	add_action( 'sa_count_video_contest_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 2 );
+	add_action( 'sa_count_video_contest_vote', array( 'KM_Filter', 'track_sa_video_contest_vote' ), 17, 3 );
 	// Submitted "Share Your Story" form (id:12)
 	add_action( 'gform_after_submission_12', array( 'KM_Filter', 'track_sa_share_story_submit' ), 10, 2);
 	// Added self to leader map or updated location info
